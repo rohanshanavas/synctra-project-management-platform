@@ -1,5 +1,6 @@
 import React from 'react'
 import type { Route } from '../../+types/root';
+import { Button } from '@/components/ui/button';
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -10,7 +11,9 @@ export function meta({ }: Route.MetaArgs) {
 
 const Homepage = () => {
   return (
-    <div>Homepage</div>
+    <div>
+      <Button>Click me</Button>
+    </div>
   )
 }
 
