@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
 import morgan from "morgan";
+import routes from "./routes/index.js";
 
 dotenv.config();
 
@@ -32,6 +33,8 @@ app.get("/", (req, res) => {
         "message": "Welcome to Synctra API",
     });
 });
+
+app.use("/api-v1", routes);
 
 // Error middleware
 app.use((err, req, res, next) => {
