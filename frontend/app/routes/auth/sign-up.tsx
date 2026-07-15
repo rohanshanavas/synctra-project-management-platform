@@ -8,8 +8,10 @@ import { Field, FieldContent, FieldError, FieldLabel } from '@/components/ui/fie
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router';
+import { useSignUpMutation } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
-type SignUpFormData = z.infer<typeof signUpSchema>;
+export type SignUpFormData = z.infer<typeof signUpSchema>;
 
 const SignUp = () => {
 
@@ -23,8 +25,19 @@ const SignUp = () => {
     }
   });
 
+  const { mutate, isPending } = useSignUpMutation();
+
   const handleOnSubmit = (data: SignUpFormData) => {
-    console.log(data);
+    mutate(data, {
+      onSuccess: (response) => {
+        toast.success("Account created successfully!");
+      },
+      onError: (error: any) => {
+        const errorMessage = error?.response?.data?.message || "An error occurred while creating the account.";
+        console.log(error);
+        toast.error(errorMessage);
+      }
+    });
   }
 
   return (
@@ -107,8 +120,8 @@ const SignUp = () => {
                 </Field>
               )}
             />
-            <Button type="submit" className="w-full">
-              Sign Up
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? "Signing Up..." : "Sign Up"}
             </Button>
           </form>
           <CardFooter className=" flex items-center justify-center bg-transparent border-0">
