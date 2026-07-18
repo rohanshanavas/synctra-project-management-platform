@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Field, FieldContent, FieldError, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useSignUpMutation } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
@@ -15,6 +15,7 @@ export type SignUpFormData = z.infer<typeof signUpSchema>;
 
 const SignUp = () => {
 
+  const navigate = useNavigate();
   const form = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -30,7 +31,12 @@ const SignUp = () => {
   const handleOnSubmit = (data: SignUpFormData) => {
     mutate(data, {
       onSuccess: (response) => {
-        toast.success("Account created successfully!");
+        toast.success("Email Verification Required", {
+          description: "Please check your email to verify your account. If you don't see the email in your inbox, please check your spam folder."
+        });
+
+        form.reset();
+        navigate("/sign-in");
       },
       onError: (error: any) => {
         const errorMessage = error?.response?.data?.message || "An error occurred while creating the account.";
