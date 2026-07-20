@@ -32,7 +32,7 @@ const SignUp = () => {
     mutate(data, {
       onSuccess: (response) => {
         toast.success("Email Verification Required", {
-          description: "Please check your email to verify your account. If you don't see the email in your inbox, please check your spam folder."
+          description: "Please check your email to verify your account. If you don't see it, please check your spam folder."
         });
 
         form.reset();
