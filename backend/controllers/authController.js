@@ -64,6 +64,86 @@ const loginUser = async (req, res) => {
 
     try {
 
+        const { email, password } = req.body
+
+        const user = await User.findOne({ email }).select("+password");
+
+        if (!user) {
+            return res.status(400).json({ message: "Invalid email" });
+        }
+
+        if (!user.isEmailVerified) {
+
+            const existingVerification = await Verification.findOne({
+                userId: user._id,
+                purpose: "email-verification"
+            });
+
+            if (existingVerification && existingVerification.expiresAt > new Date()) {
+
+                return res.status(400).json({ message: "Email not verified. Please check your email for verification link." });
+            }
+            else {
+
+                await Verification.findByIdAndDelete(existingVerification._id);
+
+                const verificationToken = jwt.sign(
+                    { userId: user._id, purpose: "email-verification" },
+                    process.env.JWT_SECRET,
+                    { expiresIn: "1h" }
+                );
+
+                await Verification.create({
+                    userId: user._id,
+                    token: verificationToken,
+                    expiresAt: new Date(Date.now() + 3600000)
+                });
+
+                const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
+
+                const emailBody = `<p>Hi ${name},</p>
+                    p>Thank you for registering. Please verify your email by clicking the link below:</p>
+                    <a href="${verificationLink}">Verify Email</a>
+                    <p>This link will expire in 1 hour.</p>`;
+
+                const emailSubject = "Email Verification";
+
+                const isEmailSent = await sendEmail(email, emailSubject, emailBody);
+
+                if (!isEmailSent) {
+                    return res.status(500).json({ message: "Failed to send verification email" });
+                }
+
+                res.status(201).json({ message: "Verification email sent. Please check and verify your account." });
+
+            }
+
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordValid) {
+            return res.status(400).json({ message: "Invalid email or password" });
+        }
+
+        const loginToken = jwt.sign(
+            { userId: user._id, purpose: "login" },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+
+        user.lastLogin = new Date();
+        await user.save();
+
+        const userData = user.toObject();
+        delete userData.password;
+
+        res.status(200).json({ 
+            message: "Login Successful",
+            loginToken,
+            user: userData
+        });
+
     }
     catch (error) {
         console.log(error);
