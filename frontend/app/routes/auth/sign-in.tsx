@@ -7,11 +7,18 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Field, FieldContent, FieldError, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
+import { useLoginMutation } from '@/hooks/useAuth';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/provider/authContext';
 
 type SignInFormData = z.infer<typeof signInSchema>;
 
 const SignIn = () => {
+
+    const navigate = useNavigate();
+    const { login } = useAuth();
 
     const form = useForm<SignInFormData>({
         resolver: zodResolver(signInSchema),
@@ -21,8 +28,22 @@ const SignIn = () => {
         }
     });
 
-    const handleOnSubmit = (data: SignInFormData) => {
-        console.log(data);
+    const { mutate, isPending } = useLoginMutation();
+
+    const handleOnSubmit = (values: SignInFormData) => {
+        mutate(values, {
+            onSuccess: (data) => {
+                login(data);
+                console.log(data);
+                toast.success("Login Successful");
+                navigate("/dashboard");
+            },
+            onError: (error: any) => {
+                const errorMessage = error?.response?.data?.message || "An error occurred";
+                console.log(error);
+                toast.error(errorMessage);
+            }
+        });
     }
 
     return (
@@ -76,8 +97,8 @@ const SignIn = () => {
                                 </Field>
                             )}
                         />
-                        <Button type="submit" className="w-full">
-                            Sign In
+                        <Button type="submit" className="w-full" disabled={isPending}>
+                            {isPending ? <Loader2 className="w-4 h-4 mr-2" /> : "Sign In"}
                         </Button>
                     </form>
                     <CardFooter className=" flex items-center justify-center bg-transparent border-0">
