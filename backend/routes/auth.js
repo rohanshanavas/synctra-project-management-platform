@@ -1,7 +1,7 @@
 import express from "express";
 import z from "zod";
 import { validateRequest } from "zod-express-middleware";
-import { loginSchema, registerSchema, resetPasswordSchema, verifyEmailSchema } from "../libs/validateSchema.js";
+import { emailSchema, loginSchema, registerSchema, resetPasswordSchema, verifyEmailSchema } from "../libs/validateSchema.js";
 import { loginUser, registerUser, resetPasswordRequest, verifyEmail, verifyResetPasswordTokenAndResetPassword } from "../controllers/authController.js";
 
 const router = express.Router();
@@ -29,9 +29,7 @@ router.post("/verify-email",
 
 router.post("/reset-password-request",
     validateRequest({
-        body: {
-            email: z.string().email()
-        }
+        body: emailSchema
     }),
     resetPasswordRequest
 )

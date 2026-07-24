@@ -1,9 +1,16 @@
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/provider/authContext'
 import React from 'react'
 
-const dashboardLayout = () => {
-  return (
-    <div>Dashboard Layout</div>
-  )
-}
+const DashboardLayout = () => {
 
-export default dashboardLayout
+    const { user, logout } = useAuth();
+
+    return (
+        <div>
+            <Button onClick={logout}>Logout</Button>
+        </div>
+    );
+};
+
+export default DashboardLayout

@@ -212,7 +212,7 @@ const resetPasswordRequest = async (req, res) => {
     try {
 
         const { email } = req.body;
-        const user = await User.findOne(email);
+        const user = await User.findOne({ email });
 
         if (!user) {
             return res.status(400).json({ message: "User not found" });
@@ -231,38 +231,37 @@ const resetPasswordRequest = async (req, res) => {
         }
 
         if (existingVerification && existingVerification.expiresAt < new Date()) {
-
             await Verification.findByIdAndDelete(existingVerification._id);
+        }
 
-            const resetPasswordToken = jwt.sign(
-                { userId: user._id, purpose: "reset-password" },
-                process.env.JWT_SECRET,
-                { expiresIn: "15m" }
-            );
+        const resetPasswordToken = jwt.sign(
+            { userId: user._id, purpose: "reset-password" },
+            process.env.JWT_SECRET,
+            { expiresIn: "15m" }
+        );
 
-            await Verification.create({
-                userId: user._id,
-                token: resetPasswordToken,
-                expiresAt: new Date(Date.now() + 15 * 60 * 1000)
-            });
+        await Verification.create({
+            userId: user._id,
+            token: resetPasswordToken,
+            expiresAt: new Date(Date.now() + 15 * 60 * 1000)
+        });
 
-            const resetPasswordLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetPasswordToken}`;
+        const resetPasswordLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetPasswordToken}`;
 
-            const emailBody = `<p>Hi ${user.name},</p>
-                p>Click the link below to reset your password:</p>
+        const emailBody = `<p>Hi ${user.name},</p>
+                <p>Click the link below to reset your password:</p>
                 <a href="${resetPasswordLink}">Reset Password</a>
                 <p>This link will expire in 15 minutes.</p>`;
 
-            const emailSubject = "Reset you password";
+        const emailSubject = "Reset you password";
 
-            const isEmailSent = await sendEmail(email, emailSubject, emailBody);
+        const isEmailSent = await sendEmail(email, emailSubject, emailBody);
 
-            if (!isEmailSent) {
-                return res.status(500).json({ message: "Failed to send reset password email" });
-            }
-
-            res.status(200).json({ message: "Reset password email sent." });
+        if (!isEmailSent) {
+            return res.status(500).json({ message: "Failed to send reset password email" });
         }
+
+        res.status(200).json({ message: "Reset password email sent." });
 
     }
     catch (error) {
@@ -301,7 +300,7 @@ const verifyResetPasswordTokenAndResetPassword = async (req, res) => {
             return res.status(401).json({ message: "Token has expired" });
         }
 
-        const user = await User.findOne(userId);
+        const user = await User.findById(userId);
 
         if (!user) {
             return res.status(401).json({ message: "User not found" });
@@ -312,7 +311,7 @@ const verifyResetPasswordTokenAndResetPassword = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-        user.password = newPassword;
+        user.password = hashedPassword;
         await user.save();
 
         await Verification.findByIdAndDelete(verification._id);
