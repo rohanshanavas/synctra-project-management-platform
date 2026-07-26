@@ -1,4 +1,5 @@
 import { Header } from '@/components/layout/header';
+import { SidebarComponent } from '@/components/layout/sidebar-component';
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
 import { useAuth } from '@/provider/authContext'
@@ -26,7 +27,7 @@ const DashboardLayout = () => {
 
     return (
         <div className="flex h-screen w-full">
-            {/* <Sidebar Component/> */}
+            <SidebarComponent currentWorkSpace={currentWorkSpace} />
             <div className="flex flex-1 flex-col h-full">
                 <Header
                     onWorkSpaceSelected={handleWorkspaceSelected}
