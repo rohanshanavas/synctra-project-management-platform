@@ -37,7 +37,7 @@ export const Header = ({ onWorkSpaceSelected, selectedWorkSpace, onCreateWorkSpa
                         </Button>
                     </DropdownMenuTrigger>
 
-                    <DropdownMenuContent>
+                    <DropdownMenuContent className="w-max">
                         <DropdownMenuLabel className="font-bold">Workspace</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
@@ -67,7 +67,7 @@ export const Header = ({ onWorkSpaceSelected, selectedWorkSpace, onCreateWorkSpa
 
                     <DropdownMenu>
                         <DropdownMenuTrigger>
-                            <button className="rounded-full border p-1 w-8 h-8">
+                            <button className="rounded-full border w-8 h-8">
                                 <Avatar className="h-8 w-8">
                                     <AvatarImage src={user?.profilePicture} alt={user?.name} />
                                     <AvatarFallback className="bg-primary text-primary-foreground">

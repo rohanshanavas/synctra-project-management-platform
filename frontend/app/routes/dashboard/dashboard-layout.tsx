@@ -2,6 +2,7 @@ import { Header } from '@/components/layout/header';
 import { SidebarComponent } from '@/components/layout/sidebar-component';
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
+import { CreateWorkSpace } from '@/components/workspace/create-workspace';
 import { useAuth } from '@/provider/authContext'
 import type { WorkSpace } from '@/types';
 import React, { useState } from 'react'
@@ -40,6 +41,9 @@ const DashboardLayout = () => {
                     </div>
                 </main>
             </div>
+
+            <CreateWorkSpace isCreatingWorkSpace={isCreatingWorkSpace} setIsCreatingWorkSpace={setIsCreatingWorkSpace} />
+
         </div>
     );
 };
