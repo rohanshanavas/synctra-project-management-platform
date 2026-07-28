@@ -34,7 +34,6 @@ const SignIn = () => {
         mutate(values, {
             onSuccess: (data) => {
                 login(data);
-                console.log(data);
                 toast.success("Login Successful");
                 navigate("/dashboard");
             },

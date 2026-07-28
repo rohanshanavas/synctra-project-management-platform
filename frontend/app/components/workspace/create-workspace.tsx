@@ -1,5 +1,3 @@
-import { useState } from 'react';
-import { useAuth } from '@/provider/authContext';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,6 +8,9 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
+import { useCreateWorkSpace } from '@/hooks/useWorkspace';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router';
 
 interface CreateWorkSpaceProps {
     isCreatingWorkSpace: boolean;
@@ -27,7 +28,7 @@ export const colorOptions = [
     "#34495E", // Navy
 ];
 
-type WorkspaceForm = z.infer<typeof workspaceSchema>;
+export type WorkspaceForm = z.infer<typeof workspaceSchema>;
 
 export const CreateWorkSpace = ({ isCreatingWorkSpace, setIsCreatingWorkSpace }: CreateWorkSpaceProps) => {
 
@@ -45,11 +46,25 @@ export const CreateWorkSpace = ({ isCreatingWorkSpace, setIsCreatingWorkSpace }:
         }
     });
 
-    const isPending = false;
+    const navigate = useNavigate();
+
+    const { mutate, isPending } = useCreateWorkSpace();
 
     const onSubmit = (data: WorkspaceForm) => {
-
-    }
+        mutate(data, {
+            onSuccess: (data: any) => {
+                form.reset();
+                setIsCreatingWorkSpace(false);
+                toast.success("Workspace created successfully!");
+                navigate(`/workspaces/${data._id}`);
+            },
+            onError: (error: any) => {
+                const errorMessage = error.response?.data?.message || "An error occurred while creating the workspace.";
+                console.log("Error creating workspace:", errorMessage);
+                toast.error(errorMessage);
+            }
+        });
+    };
 
     return (
         <div>
