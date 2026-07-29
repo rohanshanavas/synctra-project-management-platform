@@ -3,10 +3,25 @@ import { SidebarComponent } from '@/components/layout/sidebar-component';
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
 import { CreateWorkSpace } from '@/components/workspace/create-workspace';
+import { fetchData } from '@/lib/fetchUtil';
 import { useAuth } from '@/provider/authContext'
 import type { WorkSpace } from '@/types';
 import React, { useState } from 'react'
 import { Navigate, Outlet } from 'react-router';
+
+export const clientLoader = async () => {
+
+    try {
+        const [workspaces] = await Promise.all([
+            fetchData("/workspaces")
+        ]);
+
+        return { workspaces };
+    } 
+    catch (error) {
+        console.log(error);
+    }
+};
 
 const DashboardLayout = () => {
 

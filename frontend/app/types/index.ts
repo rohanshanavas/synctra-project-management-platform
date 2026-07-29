@@ -1,5 +1,5 @@
 export interface User {
-  id: string;
+  _id: string;
   name: string;
   email: string;
   createdAt: Date;
@@ -9,7 +9,7 @@ export interface User {
 }
 
 export interface WorkSpace {
-  id: string;
+  _id: string;
   name: string;
   description?: string;
   owner: User | string;
