@@ -1,6 +1,6 @@
 import type { WorkspaceForm } from "@/components/workspace/create-workspace";
-import { postData } from "@/lib/fetchUtil";
-import { useMutation } from "@tanstack/react-query";
+import { fetchData, postData } from "@/lib/fetchUtil";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 export const useCreateWorkSpace = () => {
 
@@ -8,3 +8,10 @@ export const useCreateWorkSpace = () => {
         mutationFn: async (data: WorkspaceForm) => postData("/workspaces", data),
     });
 };
+
+export const useGetWorkspacesQuery = () => {
+    return useQuery({
+        queryKey: ["workspaces"],
+        queryFn: async () => fetchData("/workspaces"),
+    });
+}
