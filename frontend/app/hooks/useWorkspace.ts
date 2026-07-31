@@ -15,3 +15,10 @@ export const useGetWorkspacesQuery = () => {
         queryFn: async () => fetchData("/workspaces"),
     });
 }
+
+export const useGetWorkspaceQueryById = (workspaceId: string) => {
+    return useQuery({
+        queryKey: ["workspaces", workspaceId],
+        queryFn: async () => fetchData(`/workspaces/${workspaceId}`),
+    });
+};
