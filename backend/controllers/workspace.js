@@ -1,4 +1,5 @@
 import Workspace from "../models/workspace.js";
+import Project from "../models/project.js";
 
 const createWorkspace = async (req, res) => {
     try {
@@ -46,7 +47,10 @@ const getWorkspaceDetails = async (req, res) => {
     try {
         const { workspaceId } = req.params;
         const userId = req.user._id;
-        const workspace = await Workspace.findById(workspaceId).populate("members.user", "name email profilePicture");
+        const workspace = await Workspace.findOne({ 
+            _id: workspaceId,
+            "members.user": userId
+        }).populate("members.user", "name email profilePicture");
 
         if (!workspace) {
             return res.status(404).json({ message: "Workspace not found" });
@@ -60,5 +64,32 @@ const getWorkspaceDetails = async (req, res) => {
     }
 };
 
+const getWorkspaceProjects = async (req, res) => {
+    try {
+        const { workspaceId } = req.params;
+        const userId = req.user._id;
+        const workspace = await Workspace.findOne({ 
+            _id: workspaceId,
+            "members.user": userId
+        }).populate("members.user", "name email profilePicture");
 
-export { createWorkspace, getWorkspaces, getWorkspaceDetails };
+        if (!workspace) {
+            return res.status(404).json({ message: "Workspace not found" });
+        }
+
+        const projects = await Project.find({ 
+            workspace: workspaceId ,
+            isArchived: false,
+            members: { $in: [userId] }
+        }).populate("tasks", "status").sort({ createdAt: -1 });
+
+        res.status(200).json({ projects, workspace });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+
+export { createWorkspace, getWorkspaces, getWorkspaceDetails, getWorkspaceProjects };
