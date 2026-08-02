@@ -89,3 +89,10 @@ export interface Task {
   attachments?: Attachment[];
 }
 
+export interface MemberProps {
+  _id: string;
+  user: User;
+  role: "admin" | "member" | "viewer" | "owner";
+  joinedAt: Date;
+}
+
