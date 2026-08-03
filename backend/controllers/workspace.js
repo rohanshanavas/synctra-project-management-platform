@@ -47,7 +47,7 @@ const getWorkspaceDetails = async (req, res) => {
     try {
         const { workspaceId } = req.params;
         const userId = req.user._id;
-        const workspace = await Workspace.findOne({ 
+        const workspace = await Workspace.findOne({
             _id: workspaceId,
             "members.user": userId
         }).populate("members.user", "name email profilePicture");
@@ -68,7 +68,7 @@ const getWorkspaceProjects = async (req, res) => {
     try {
         const { workspaceId } = req.params;
         const userId = req.user._id;
-        const workspace = await Workspace.findOne({ 
+        const workspace = await Workspace.findOne({
             _id: workspaceId,
             "members.user": userId
         }).populate("members.user", "name email profilePicture");
@@ -77,11 +77,15 @@ const getWorkspaceProjects = async (req, res) => {
             return res.status(404).json({ message: "Workspace not found" });
         }
 
-        const projects = await Project.find({ 
-            workspace: workspaceId ,
+        const projects = await Project.find({
+            workspace: workspaceId,
             isArchived: false,
-            members: { $in: [userId] }
-        }).populate("tasks", "status").sort({ createdAt: -1 });
+            // members: { $in: [userId] }
+        })
+            //.populate("tasks", "status")
+            .sort({ createdAt: -1 });
+
+
 
         res.status(200).json({ projects, workspace });
     }

@@ -32,11 +32,6 @@ export type WorkspaceForm = z.infer<typeof workspaceSchema>;
 
 export const CreateWorkSpace = ({ isCreatingWorkSpace, setIsCreatingWorkSpace }: CreateWorkSpaceProps) => {
 
-    // const [workspaceName, setWorkspaceName] = useState("");
-    // const [workspaceDescription, setWorkspaceDescription] = useState("");
-    // const [workspaceColor, setWorkspaceColor] = useState("#000000");
-    // const { user } = useAuth();
-
     const form = useForm<WorkspaceForm>({
         resolver: zodResolver(workspaceSchema),
         defaultValues: {
