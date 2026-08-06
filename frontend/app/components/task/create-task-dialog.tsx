@@ -116,7 +116,6 @@ export const CreateTaskDialog = ({ open, onOpenChange, projectId, projectMembers
                                                     <SelectContent>
                                                         <SelectItem value="To Do">To Do</SelectItem>
                                                         <SelectItem value="In Progress">In Progress</SelectItem>
-                                                        <SelectItem value="Review">Review</SelectItem>
                                                         <SelectItem value="Done">Done</SelectItem>
                                                     </SelectContent>
                                                 </Select>
