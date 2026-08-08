@@ -1,3 +1,4 @@
+import { Loader } from '@/components/ui/loader';
 import { useAuth } from '@/provider/authContext';
 import React from 'react'
 import { Navigate, Outlet } from 'react-router'
@@ -7,7 +8,9 @@ const AuthLayout = () => {
     const {isAuthenticated, isLoading} = useAuth();
 
     if (isLoading) {
-        return <div>Loading...</div>;
+        return (
+            <Loader />
+        );
     }
 
     if (isAuthenticated) {

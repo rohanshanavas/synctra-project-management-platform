@@ -1,4 +1,5 @@
 import { recordActivity } from "../libs/index.js";
+import ActivityLog from "../models/activity.js";
 import Project from "../models/project.js";
 import Task from "../models/task.js";
 import Workspace from "../models/workspace.js";
@@ -335,7 +336,9 @@ const updateSubtask = async (req, res) => {
         subtask.completed = completed;
         await task.save();
 
-        await recordActivity(req.user._id, "updated_subtask", "Task", taskId, { description: `Updated subtask completion status from "${oldStatus}" to "${completed}"` });
+        const oldStatusText = oldStatus ? "Completed" : "Not completed";
+        const newStatusText = completed ? "Completed" : "Not completed";
+        await recordActivity(req.user._id, "updated_subtask", "Task", taskId, { description: `Updated subtask completion status from "${oldStatusText}" to "${newStatusText}"` });
 
         res.status(200).json(task);
     }
@@ -345,4 +348,22 @@ const updateSubtask = async (req, res) => {
     }
 };
 
-export { createTask, getTaskById, updateTaskTitle, updateTaskDescription, updateTaskStatus, updateTaskAssignees, updateTaskPriority, addSubtask, updateSubtask };
+const getActivitybyResourceId = async (req, res) => {
+    try {
+        const { resourceId } = req.params;
+
+        const activity = await ActivityLog.find({ resourceId }).populate("user", "name profilePicture").sort({ createdAt: -1 });
+
+        if (!activity) {
+            return res.status(404).json({ message: "Activity not found" });
+        }
+
+        res.status(200).json(activity);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export { createTask, getTaskById, updateTaskTitle, updateTaskDescription, updateTaskStatus, updateTaskAssignees, updateTaskPriority, addSubtask, updateSubtask, getActivitybyResourceId };

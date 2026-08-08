@@ -5,6 +5,7 @@ import { TaskDescription } from "@/components/task/task-description";
 import { TaskPrioritySelector } from "@/components/task/task-priority-selector";
 import { TaskStatusSelector } from "@/components/task/task-status-selector";
 import { TaskTitle } from "@/components/task/task-title";
+import { Watchers } from "@/components/task/watchers";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/ui/loader";
@@ -14,6 +15,8 @@ import type { Project, Task } from "@/types";
 import { formatDistanceToNow } from "date-fns";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
+import { TaskActivity } from "../../../components/task/task-activity";
+import { CommentSection } from "@/components/task/comment-section";
 
 const TaskDetails = () => {
 
@@ -28,9 +31,7 @@ const TaskDetails = () => {
 
     if (isLoading) {
         return (
-            <div>
-                <Loader />
-            </div>
+            <Loader />
         )
     }
 
@@ -88,7 +89,7 @@ const TaskDetails = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex flex-col lg:flex-row gap-6">
                 <div className="lg:col-span-2">
                     <div className="bg-card shadow-sm rounded-lg p-6 mb-6">
                         <div className="flex flex-col md:flex-row justify-between items-start mb-4">
@@ -127,6 +128,14 @@ const TaskDetails = () => {
 
                         <SubTaskDetails taskId={task._id} subtasks={task.subtasks || []} />
                     </div>
+
+                    <CommentSection taskId={task._id} members={project.members as any} />
+                </div>
+
+                <div className="w-full">
+                    <Watchers watchers={task.watchers || []} />
+
+                    <TaskActivity resourceId={task._id} />
                 </div>
             </div>
         </div >

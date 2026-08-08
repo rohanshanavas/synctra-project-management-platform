@@ -3,7 +3,7 @@ import { z } from "zod";
 import authMiddleware from "../middleware/authMiddleware.js";
 import { validateRequest } from "zod-express-middleware";
 import { taskSchema } from "../libs/validateSchema.js";
-import { createTask, getTaskById, updateTaskDescription, updateTaskTitle, updateTaskStatus, updateTaskAssignees, updateTaskPriority, addSubtask, updateSubtask } from "../controllers/task.js";
+import { createTask, getTaskById, updateTaskDescription, updateTaskTitle, updateTaskStatus, updateTaskAssignees, updateTaskPriority, addSubtask, updateSubtask, getActivitybyResourceId } from "../controllers/task.js";
 
 const router = express.Router();
 
@@ -118,6 +118,16 @@ router.get("/:taskId",
         })
     }),
     getTaskById
+);
+
+router.get("/:resourceId/activity",
+    authMiddleware,
+    validateRequest({
+        params: z.object({
+            resourceId: z.string()
+        })
+    }),
+    getActivitybyResourceId
 );
 
 export default router;

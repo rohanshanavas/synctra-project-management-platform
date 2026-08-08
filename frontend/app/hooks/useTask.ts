@@ -33,6 +33,7 @@ export const useUpdateTaskTitleMutation = () => {
             updateData(`/tasks/${data.taskId}/title`, { title: data.title }),
         onSuccess: (data: any) => {
             queryClient.invalidateQueries({ queryKey: ["task", data._id] });
+            queryClient.invalidateQueries({ queryKey: ["task-activity", data._id] });
         }
     });
 };
@@ -46,6 +47,7 @@ export const useUpdateTaskStatusMutation = () => {
             updateData(`/tasks/${data.taskId}/status`, { status: data.status }),
         onSuccess: (data: any) => {
             queryClient.invalidateQueries({ queryKey: ["task", data._id] });
+            queryClient.invalidateQueries({ queryKey: ["task-activity", data._id] });
         }
     });
 };
@@ -59,6 +61,7 @@ export const useUpdateTaskDescriptionMutation = () => {
             updateData(`/tasks/${data.taskId}/description`, { description: data.description }),
         onSuccess: (data: any) => {
             queryClient.invalidateQueries({ queryKey: ["task", data._id] });
+            queryClient.invalidateQueries({ queryKey: ["task-activity", data._id] });
         }
     });
 };
@@ -72,6 +75,7 @@ export const useUpdateTaskAssigneesMutation = () => {
             updateData(`/tasks/${data.taskId}/assignees`, { assignees: data.assignees }),
         onSuccess: (data: any) => {
             queryClient.invalidateQueries({ queryKey: ["task", data._id] });
+            queryClient.invalidateQueries({ queryKey: ["task-activity", data._id] });
         }
     });
 }
@@ -85,6 +89,7 @@ export const useUpdateTaskPriorityMutation = () => {
             updateData(`/tasks/${data.taskId}/priority`, { priority: data.priority }),
         onSuccess: (data: any) => {
             queryClient.invalidateQueries({ queryKey: ["task", data._id] });
+            queryClient.invalidateQueries({ queryKey: ["task-activity", data._id] });
         }
     });
 }
@@ -98,6 +103,7 @@ export const useAddSubtaskMutation = () => {
             postData(`/tasks/${data.taskId}/add-subtask`, { title: data.title }),
         onSuccess: (data: any) => {
             queryClient.invalidateQueries({ queryKey: ["task", data._id] });
+            queryClient.invalidateQueries({ queryKey: ["task-activity", data._id] });
         }
     });
 }
@@ -111,6 +117,7 @@ export const useUpdateSubtaskMutation = () => {
             updateData(`/tasks/${data.taskId}/update-subtask/${data.subtaskId}`, { completed: data.completed }),
         onSuccess: (data: any) => {
             queryClient.invalidateQueries({ queryKey: ["task", data._id] });
+            queryClient.invalidateQueries({ queryKey: ["task-activity", data._id] });
         }
     });
 }
