@@ -3,6 +3,7 @@ import ActivityLog from "../models/activity.js";
 import Project from "../models/project.js";
 import Task from "../models/task.js";
 import Workspace from "../models/workspace.js";
+import Comment from "../models/comment.js";
 
 const createTask = async (req, res) => {
     try {
@@ -366,4 +367,143 @@ const getActivitybyResourceId = async (req, res) => {
     }
 };
 
-export { createTask, getTaskById, updateTaskTitle, updateTaskDescription, updateTaskStatus, updateTaskAssignees, updateTaskPriority, addSubtask, updateSubtask, getActivitybyResourceId };
+const getCommentsByTaskId = async (req, res) => {
+    try {
+        const { taskId } = req.params;
+
+        const comments = await Comment.find({ task: taskId }).populate("author", "name profilePicture").sort({ createdAt: -1 });
+
+        if (!comments) {
+            return res.status(404).json({ message: "Comments not found" });
+        }
+
+        res.status(200).json(comments);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+const addComment = async (req, res) => {
+    try {
+        const { taskId } = req.params;
+        const { text } = req.body;
+
+        const task = await Task.findById(taskId);
+
+        if (!task) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+
+        const project = await Project.findById(task.project);
+
+        if (!project) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        const isMember = project.members.some((member) => member.user.toString() === req.user._id.toString());
+
+        if (!isMember) {
+            return res.status(403).json({ message: "You are not a member of this project" });
+        }
+
+        const newComment = await Comment.create({
+            text,
+            author: req.user._id,
+            task: taskId
+        });
+
+        task.comments.push(newComment._id);
+        await task.save();
+
+        await recordActivity(req.user._id, "added_comment", "Task", taskId, { description: `Added a new comment: "${text.substring(0, 50)}${text.length > 50 ? "..." : ""}"` });
+
+        res.status(201).json(newComment);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+const watchTask = async (req, res) => {
+    try {
+        const { taskId } = req.params;
+
+        const task = await Task.findById(taskId);
+
+        if (!task) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+
+        const project = await Project.findById(task.project);
+
+        if (!project) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        const isMember = project.members.some((member) => member.user.toString() === req.user._id.toString());
+
+        if (!isMember) {
+            return res.status(403).json({ message: "You are not a member of this project" });
+        }   
+
+        const isWatching = task.watchers.includes(req.user._id);
+
+        if (!isWatching) {
+            task.watchers.push(req.user._id);
+        }
+        else {
+            task.watchers = task.watchers.filter((watcher) => watcher.toString() !== req.user._id.toString());
+        }
+
+        await task.save();
+        await recordActivity(req.user._id, "updated_task", "Task", taskId, { description: `${isWatching ? "Stopped watching" : "Started watching"} the task "${task.title}"` });
+        
+        res.status(200).json(task);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+const archiveTask = async (req, res) => {
+    try {
+        const { taskId } = req.params;
+
+        const task = await Task.findById(taskId);
+
+        if (!task) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+
+        const project = await Project.findById(task.project);
+
+        if (!project) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        const isMember = project.members.some((member) => member.user.toString() === req.user._id.toString());
+
+        if (!isMember) {
+            return res.status(403).json({ message: "You are not a member of this project" });
+        }
+
+        const isArchived = task.isArchived;
+        task.isArchived = !isArchived;
+        await task.save();
+
+        const action = task.isArchived ? "archived" : "unarchived";
+        await recordActivity(req.user._id, "updated_task", "Task", taskId, { description: `${isArchived ? "Unarchived" : "Archived"} the task "${task.title}"` });
+
+        res.status(200).json(task);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export { createTask, getTaskById, updateTaskTitle, updateTaskDescription, updateTaskStatus, updateTaskAssignees, updateTaskPriority, addSubtask, updateSubtask, getActivitybyResourceId, getCommentsByTaskId, addComment, watchTask, archiveTask };

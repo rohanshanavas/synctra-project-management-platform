@@ -9,7 +9,7 @@ import { Watchers } from "@/components/task/watchers";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/ui/loader";
-import { useTaskbyIdQuery } from "@/hooks/useTask";
+import { useArchiveTaskMutation, useTaskbyIdQuery, useWatchTaskMutation } from "@/hooks/useTask";
 import { useAuth } from "@/provider/authContext";
 import type { Project, Task } from "@/types";
 import { formatDistanceToNow } from "date-fns";
@@ -17,6 +17,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 import { TaskActivity } from "../../../components/task/task-activity";
 import { CommentSection } from "@/components/task/comment-section";
+import { toast } from "sonner";
 
 const TaskDetails = () => {
 
@@ -28,6 +29,9 @@ const TaskDetails = () => {
         data: { task: Task; project: Project },
         isLoading: boolean
     };
+
+    const { mutate: watchTask, isPending: isWatching } = useWatchTaskMutation();
+    const { mutate: archiveTask, isPending: isArchived } = useArchiveTaskMutation();
 
     if (isLoading) {
         return (
@@ -47,13 +51,39 @@ const TaskDetails = () => {
 
     const { task, project } = data;
 
-    const isUserWatching = task?.watchers?.some((watcher) => watcher._id.toString() === user?._id).toString();
+    const isUserWatching = task?.watchers?.some((watcher) => watcher._id.toString() === user?._id.toString());
 
     const goBack = () => {
         navigate(-1);
     }
 
     const members = task?.assignees || [];
+
+    const handleWatchTask = () => {
+        watchTask({ taskId: task._id }, {
+            onSuccess: () => {
+                toast.success(isUserWatching ? "You are no longer watching this task" : "You are now watching this task");
+            },
+            onError: (error: any) => {
+                const errorMessage = error?.response?.data?.message;
+                toast.error(errorMessage);
+                console.log("Error watching task:", errorMessage);
+            }
+        });
+    }
+
+    const handleArchiveTask = () => {
+        archiveTask({ taskId: task._id }, {
+            onSuccess: () => {
+                toast.success(task.isArchived ? "Task unarchived successfully" : "Task archived successfully");
+            },
+            onError: (error: any) => {
+                const errorMessage = error?.response?.data?.message;
+                toast.error(errorMessage);
+                console.log("Error archiving task:", errorMessage);
+            }
+        });
+    }
 
     return (
         <div className="container mx-auto p-0 py-4 md:px-4">
@@ -69,7 +99,7 @@ const TaskDetails = () => {
                 </div>
 
                 <div className="flex space-x-2 mt-4 md:mt-0">
-                    <Button className="w-fit" variant="outline" size="sm" onClick={() => { }}>
+                    <Button className="w-fit" variant="outline" size="sm" onClick={handleWatchTask} disabled={isWatching}>
                         {isUserWatching ? (
                             <>
                                 <EyeOff className="mr-2 size-4" />
@@ -83,7 +113,7 @@ const TaskDetails = () => {
                         )}
                     </Button>
 
-                    <Button className="w-fit" variant="outline" size="sm" onClick={() => { }}>
+                    <Button className="w-fit" variant="outline" size="sm" onClick={handleArchiveTask} disabled={isArchived}>
                         {task.isArchived ? "Unarchive" : "Archive"}
                     </Button>
                 </div>

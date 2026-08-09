@@ -103,21 +103,21 @@ export interface MemberProps {
 }
 
 export type ActionType = "created_task"
-        | "updated_task"
-        | "created_subtask"
-        | "updated_subtask"
-        | "completed_task"
-        | "created_project"
-        | "updated_project"
-        | "completed_project"
-        | "created_workspace"
-        | "updated_workspace"
-        | "added_comment"
-        | "added_member"
-        | "removed_member"
-        | "joined_workspace"
-        | "transferred_workspace_ownership"
-        | "added_attachment";
+  | "updated_task"
+  | "created_subtask"
+  | "updated_subtask"
+  | "completed_task"
+  | "created_project"
+  | "updated_project"
+  | "completed_project"
+  | "created_workspace"
+  | "updated_workspace"
+  | "added_comment"
+  | "added_member"
+  | "removed_member"
+  | "joined_workspace"
+  | "transferred_workspace_ownership"
+  | "added_attachment";
 
 export type ResourceType = "Task" | "Project" | "Workspace" | "Comment" | "User";
 
@@ -128,4 +128,23 @@ export interface ActivityLog {
   resourceType: ResourceType;
   details: any;
   createdAt: Date;
+}
+
+export interface CommentReaction {
+  emoji: string;
+  user: User;
+}
+
+export interface Comment {
+  _id: string;
+  author: User;
+  text: string;
+  createdAt: Date;
+  reactions?: CommentReaction[];
+  attachments?: {
+    fileName: string;
+    fileUrl: string;
+    fileType?: string;
+    fileSize?: number;
+  }[];
 }
