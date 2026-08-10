@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 import { Bell, PlusCircle } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Link, useLoaderData } from "react-router";
+import { Link, useLoaderData, useLocation, useNavigate } from "react-router";
 import { WorkspaceAvatar } from "../workspace/workspace-avatar";
 
 interface HeaderProps {
@@ -16,8 +16,25 @@ interface HeaderProps {
 
 export const Header = ({ onWorkSpaceSelected, selectedWorkSpace, onCreateWorkSpace }: HeaderProps) => {
 
+    const navigate = useNavigate();
+
     const { user, logout } = useAuth();
     const { workspaces } = useLoaderData() as { workspaces: WorkSpace[] };
+
+    const isOnWorkspacePage = useLocation().pathname.includes("/workspace");
+
+    const handleOnClick = (workspace: WorkSpace) => {
+        onWorkSpaceSelected(workspace);
+        const location = window.location;
+
+        if (isOnWorkspacePage) {
+            navigate(`/workspaces/${workspace._id}`);
+        }
+        else {
+            const basePath = location.pathname
+            navigate(`${basePath}?workspaceId=${workspace._id}`);
+        }
+    }
 
     return (
         <div className="bg-background sticky top-0 z-40 border-b">
@@ -43,7 +60,7 @@ export const Header = ({ onWorkSpaceSelected, selectedWorkSpace, onCreateWorkSpa
                         <DropdownMenuGroup>
                             {
                                 workspaces.map((workspace) => (
-                                    <DropdownMenuItem key={workspace._id} onClick={() => onWorkSpaceSelected(workspace)}>
+                                    <DropdownMenuItem key={workspace._id} onClick={() => handleOnClick(workspace)}>
                                         {workspace.color && <WorkspaceAvatar color={workspace.color} name={workspace.name} />}
                                         <span className="ml-2">{workspace.name}</span>
                                     </DropdownMenuItem>

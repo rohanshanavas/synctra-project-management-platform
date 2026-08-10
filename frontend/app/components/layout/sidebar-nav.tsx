@@ -28,8 +28,8 @@ export const SidebarNav = ({ items, isCollapsed, className, currentWorkspace, ..
                     if (item.href === "/workspaces") {
                         navigate(item.href);
                     }
-                    else if (currentWorkspace && currentWorkspace.id) {
-                        navigate(`${item.href}?workspaceId=${currentWorkspace.id}`);
+                    else if (currentWorkspace && currentWorkspace._id) {
+                        navigate(`${item.href}?workspaceId=${currentWorkspace._id}`);
                     }
                     else {
                         navigate(item.href);
