@@ -1,5 +1,7 @@
+import { RecentProjects } from "@/components/dashboard/recent-projects";
 import { StatisticsCharts } from "@/components/dashboard/statistics-charts";
 import { StatsCard } from "@/components/dashboard/stats-card";
+import { UpcomingTasks } from "@/components/dashboard/upcoming-tasks";
 import { Loader } from "@/components/ui/loader";
 import { useGetWorkspaceStatsQuery } from "@/hooks/useWorkspace";
 import type { Project, ProjectStatusData, StatsCardProps, Task, TaskPriorityData, TaskTrendsData, WorkspaceProductivityData } from "@/types";
@@ -60,6 +62,11 @@ const Dashboard = () => {
                 taskPriorityData={data.taskPriorityData}
                 workspaceProductivityData={data.workspaceProductivityData}
             />
+
+            <div className="grid gap-6 lg:grid-cols-2">
+                <RecentProjects data={data.recentProjects} />
+                <UpcomingTasks data={data.upcomingTasks} />
+            </div>
         </div>
     )
 }
