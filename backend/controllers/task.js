@@ -447,7 +447,7 @@ const watchTask = async (req, res) => {
 
         if (!isMember) {
             return res.status(403).json({ message: "You are not a member of this project" });
-        }   
+        }
 
         const isWatching = task.watchers.includes(req.user._id);
 
@@ -460,7 +460,7 @@ const watchTask = async (req, res) => {
 
         await task.save();
         await recordActivity(req.user._id, "updated_task", "Task", taskId, { description: `${isWatching ? "Stopped watching" : "Started watching"} the task "${task.title}"` });
-        
+
         res.status(200).json(task);
     }
     catch (error) {
@@ -506,4 +506,25 @@ const archiveTask = async (req, res) => {
     }
 };
 
-export { createTask, getTaskById, updateTaskTitle, updateTaskDescription, updateTaskStatus, updateTaskAssignees, updateTaskPriority, addSubtask, updateSubtask, getActivitybyResourceId, getCommentsByTaskId, addComment, watchTask, archiveTask };
+const getMyTasks = async (req, res) => {
+    try {
+        const userId = req.user._id;
+
+        const tasks = await Task.find({ assignees: { $in: [userId] } })
+            .populate("project", "title workspace")
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(tasks);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export {
+    createTask, getTaskById, updateTaskTitle, updateTaskDescription,
+    updateTaskStatus, updateTaskAssignees, updateTaskPriority, addSubtask,
+    updateSubtask, getActivitybyResourceId, getCommentsByTaskId, addComment,
+    watchTask, archiveTask, getMyTasks
+};
