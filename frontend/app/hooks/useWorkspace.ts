@@ -30,3 +30,11 @@ export const useGetWorkspaceStatsQuery = (workspaceId: string) => {
         enabled: Boolean(workspaceId)
     });
 }
+
+export const useGetWorkspaceMembersQuery = (workspaceId: string) => {
+    return useQuery({
+        queryKey: ["workspace", workspaceId, "details"],
+        queryFn: async () => fetchData(`/workspaces/${workspaceId}`),
+        enabled: Boolean(workspaceId)
+    });
+}
