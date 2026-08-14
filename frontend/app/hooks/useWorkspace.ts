@@ -38,3 +38,11 @@ export const useGetWorkspaceMembersQuery = (workspaceId: string) => {
         enabled: Boolean(workspaceId)
     });
 }
+
+export const useGetArchivedItemsQuery = (workspaceId: string) => {
+    return useQuery({
+        queryKey: ["workspace", workspaceId, "archived"],
+        queryFn: async () => fetchData(`/workspaces/${workspaceId}/archived`),
+        enabled: Boolean(workspaceId)
+    });
+}

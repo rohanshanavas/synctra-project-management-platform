@@ -1,5 +1,6 @@
 import Workspace from "../models/workspace.js";
 import Project from "../models/project.js";
+import Task from "../models/task.js";
 
 const createWorkspace = async (req, res) => {
     try {
@@ -251,7 +252,7 @@ const getWorkspaceStats = async (req, res) => {
         };
 
 
-        res.status(200).json({stats, taskTrendsData, projectStatusData, taskPriorityData, workspaceProductivityData, upcomingTasks, recentProjects: projects.slice(0, 5) });
+        res.status(200).json({ stats, taskTrendsData, projectStatusData, taskPriorityData, workspaceProductivityData, upcomingTasks, recentProjects: projects.slice(0, 5) });
     }
     catch (error) {
         console.log(error);
@@ -260,4 +261,37 @@ const getWorkspaceStats = async (req, res) => {
 };
 
 
-export { createWorkspace, getWorkspaces, getWorkspaceDetails, getWorkspaceProjects, getWorkspaceStats };
+const getArchivedItems = async (req, res) => {
+    try {
+        const { workspaceId } = req.params;
+
+        const workspace = await Workspace.findById(workspaceId);
+
+        if (!workspace) {
+            return res.status(404).json({ message: "Workspace not found" });
+        }
+
+        const isMember = workspace.members.some(member => member.user.toString() === req.user._id.toString());
+
+        if (!isMember) {
+            return res.status(403).json({ message: "You are not a member of this workspace" });
+        }
+
+        const archivedProjects = await Project.find({ workspace: workspaceId, isArchived: true }).sort({ updatedAt: -1 });
+
+        const workspaceProjects = await Project.find({ workspace: workspaceId }, "_id");
+        const projectIds = workspaceProjects.map(p => p._id);
+
+        const archivedTasks = await Task.find({ project: { $in: projectIds }, isArchived: true })
+            .populate("project", "title")
+            .sort({ updatedAt: -1 });
+
+        res.status(200).json({ archivedProjects, archivedTasks });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export { createWorkspace, getWorkspaces, getWorkspaceDetails, getWorkspaceProjects, getWorkspaceStats, getArchivedItems };

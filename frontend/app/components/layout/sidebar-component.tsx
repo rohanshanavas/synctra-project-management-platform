@@ -18,7 +18,7 @@ export const SidebarComponent = ({ currentWorkSpace }: { currentWorkSpace: WorkS
         { name: 'Workspaces', href: '/workspaces', icon: Users },
         { name: 'My Tasks', href: '/my-tasks', icon: ListCheck },
         { name: 'Members', href: '/members', icon: Users },
-        { name: 'Achieved', href: '/achieved', icon: CheckCircle2 },
+        { name: 'Archived', href: '/archived', icon: CheckCircle2 },
         { name: 'Settings', href: '/settings', icon: Settings }
     ];
 
@@ -57,7 +57,7 @@ export const SidebarComponent = ({ currentWorkSpace }: { currentWorkSpace: WorkS
 
             <div>
                 <Button variant="ghost" size={isCollapsed ? "icon" : "default"} onClick={logout}>
-                    <LogOut className={cn("size-4", isCollapsed && "mr-2")}  />
+                    <LogOut className={cn("size-4", isCollapsed && "mr-2")} />
                     <span className="hidden md:block">Logout</span>
                 </Button>
             </div>
