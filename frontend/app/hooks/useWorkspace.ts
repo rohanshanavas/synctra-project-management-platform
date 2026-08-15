@@ -1,5 +1,5 @@
 import type { WorkspaceForm } from "@/components/workspace/create-workspace";
-import { fetchData, postData } from "@/lib/fetchUtil";
+import { deleteData, fetchData, postData, updateData } from "@/lib/fetchUtil";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 export const useCreateWorkSpace = () => {
@@ -46,3 +46,24 @@ export const useGetArchivedItemsQuery = (workspaceId: string) => {
         enabled: Boolean(workspaceId)
     });
 }
+
+export const useUpdateWorkspaceMutation = () => {
+    return useMutation({
+        mutationFn: async ({ workspaceId, data }: { workspaceId: string; data: Partial<WorkspaceForm> }) =>
+            updateData(`/workspaces/${workspaceId}`, data),
+    });
+};
+
+export const useTransferWorkspaceOwnershipMutation = () => {
+    return useMutation({
+        mutationFn: async ({ workspaceId, newOwnerId }: { workspaceId: string; newOwnerId: string }) =>
+            updateData(`/workspaces/${workspaceId}/transfer-ownership`, { newOwnerId }),
+    });
+};
+
+export const useDeleteWorkspaceMutation = () => {
+    return useMutation({
+        mutationFn: async ({ workspaceId }: { workspaceId: string }) =>
+            deleteData(`/workspaces/${workspaceId}`),
+    });
+};

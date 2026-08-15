@@ -116,7 +116,6 @@ export type ActionType = "created_task"
   | "added_member"
   | "removed_member"
   | "joined_workspace"
-  | "transferred_workspace_ownership"
   | "added_attachment";
 
 export type ResourceType = "Task" | "Project" | "Workspace" | "Comment" | "User";

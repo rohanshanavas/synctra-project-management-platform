@@ -1,6 +1,8 @@
 import Workspace from "../models/workspace.js";
 import Project from "../models/project.js";
 import Task from "../models/task.js";
+import ActivityLog from "../models/activity.js";
+import Comment from "../models/comment.js";
 
 const createWorkspace = async (req, res) => {
     try {
@@ -21,6 +23,138 @@ const createWorkspace = async (req, res) => {
 
         console.log("Workspace created successfully:", workspace);
         res.status(201).json(workspace);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+const updateWorkspace = async (req, res) => {
+    try {
+        const { workspaceId } = req.params;
+        const { name, description, color } = req.body;
+
+        const workspace = await Workspace.findById(workspaceId);
+
+        if (!workspace) {
+            return res.status(404).json({ message: "Workspace not found" });
+        }
+
+        const userId = req.user._id.toString();
+
+        if (workspace.owner.toString() !== userId) {
+            return res.status(403).json({ message: "Only workspace owner can update workspace settings" });
+        }
+
+        if (typeof name === "string") {
+            workspace.name = name;
+        }
+
+        if (typeof description === "string") {
+            workspace.description = description;
+        }
+
+        if (typeof color === "string") {
+            workspace.color = color;
+        }
+
+        await workspace.save();
+
+        res.status(200).json(workspace);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+const transferWorkspaceOwnership = async (req, res) => {
+    try {
+        const { workspaceId } = req.params;
+        const { newOwnerId } = req.body;
+
+        const workspace = await Workspace.findById(workspaceId).populate("members.user", "name email profilePicture");
+
+        if (!workspace) {
+            return res.status(404).json({ message: "Workspace not found" });
+        }
+
+        const currentOwnerId = req.user._id.toString();
+
+        if (workspace.owner.toString() !== currentOwnerId) {
+            return res.status(403).json({ message: "Only workspace owner can transfer ownership" });
+        }
+
+        if (newOwnerId === currentOwnerId) {
+            return res.status(400).json({ message: "You already own this workspace" });
+        }
+
+        const nextOwnerMember = workspace.members.find((member) => member.user._id.toString() === newOwnerId);
+
+        if (!nextOwnerMember) {
+            return res.status(400).json({ message: "Selected user is not a workspace member" });
+        }
+
+        workspace.owner = newOwnerId;
+
+        workspace.members.forEach((member) => {
+            const memberId = member.user._id.toString();
+
+            if (memberId === currentOwnerId) {
+                member.role = "admin";
+            }
+
+            if (memberId === newOwnerId) {
+                member.role = "owner";
+            }
+        });
+
+        await workspace.save();
+
+        res.status(200).json({ message: "Workspace ownership transferred successfully", workspace });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+const deleteWorkspace = async (req, res) => {
+    try {
+        const { workspaceId } = req.params;
+
+        const workspace = await Workspace.findById(workspaceId);
+
+        if (!workspace) {
+            return res.status(404).json({ message: "Workspace not found" });
+        }
+
+        const userId = req.user._id.toString();
+
+        if (workspace.owner.toString() !== userId) {
+            return res.status(403).json({ message: "Only workspace owner can delete this workspace" });
+        }
+
+        const projects = await Project.find({ workspace: workspaceId }, "_id");
+        const projectIds = projects.map((project) => project._id);
+
+        const tasks = await Task.find({ project: { $in: projectIds } }, "_id");
+        const taskIds = tasks.map(task => task._id);
+
+        await Promise.all([
+            ActivityLog.deleteMany({ resourceType: "Task", resourceId: { $in: taskIds } }),
+
+            Comment.deleteMany({ task: { $in: taskIds } }),
+
+            Task.deleteMany({ project: { $in: projectIds } }),
+
+            Project.deleteMany({ workspace: workspaceId }),
+
+            Workspace.deleteOne({ _id: workspaceId })
+        ]);
+
+        res.status(200).json({ message: "Workspace deleted successfully" });
     }
     catch (error) {
         console.log(error);
@@ -294,4 +428,14 @@ const getArchivedItems = async (req, res) => {
     }
 };
 
-export { createWorkspace, getWorkspaces, getWorkspaceDetails, getWorkspaceProjects, getWorkspaceStats, getArchivedItems };
+export {
+    createWorkspace,
+    updateWorkspace,
+    transferWorkspaceOwnership,
+    deleteWorkspace,
+    getWorkspaces,
+    getWorkspaceDetails,
+    getWorkspaceProjects,
+    getWorkspaceStats,
+    getArchivedItems
+};

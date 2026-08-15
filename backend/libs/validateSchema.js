@@ -31,6 +31,16 @@ const workspaceSchema = z.object({
     color: z.string().min(1, "Color is required")
 });
 
+const workspaceUpdateSchema = z.object({
+    name: z.string().min(1, "Workspace name is required").optional(),
+    description: z.string().optional(),
+    color: z.string().min(1, "Color is required").optional()
+});
+
+const transferWorkspaceOwnershipSchema = z.object({
+    newOwnerId: z.string().min(1, "New owner is required")
+});
+
 const projectSchema = z.object({
     title: z.string().min(3, "Project title is required"),
     description: z.string().optional(),
@@ -53,4 +63,15 @@ const taskSchema = z.object({
     assignees: z.array(z.string()).min(1, "At least one assignee is required")
 });
 
-export { registerSchema, loginSchema, verifyEmailSchema, resetPasswordSchema, emailSchema, workspaceSchema, projectSchema, taskSchema };
+export {
+    registerSchema,
+    loginSchema,
+    verifyEmailSchema,
+    resetPasswordSchema,
+    emailSchema,
+    workspaceSchema,
+    workspaceUpdateSchema,
+    transferWorkspaceOwnershipSchema,
+    projectSchema,
+    taskSchema
+};
