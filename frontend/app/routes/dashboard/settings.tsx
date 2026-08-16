@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Loader } from "@/components/ui/loader";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useDeleteWorkspaceMutation, useGetWorkspaceMembersQuery, useTransferWorkspaceOwnershipMutation, useUpdateWorkspaceMutation } from "@/hooks/useWorkspace";
+import { useDeleteWorkspaceMutation, useGetWorkspaceDetailsQuery, useTransferWorkspaceOwnershipMutation, useUpdateWorkspaceMutation } from "@/hooks/useWorkspace";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/provider/authContext";
 import { queryClient } from "@/provider/reactQueryProvider";
@@ -38,7 +38,7 @@ const Settings = () => {
         }
     });
 
-    const { data, isPending } = useGetWorkspaceMembersQuery(workspaceId) as {
+    const { data, isPending } = useGetWorkspaceDetailsQuery(workspaceId) as {
         data: WorkSpace;
         isPending: boolean;
     };

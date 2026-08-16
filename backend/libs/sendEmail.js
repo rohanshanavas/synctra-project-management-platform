@@ -1,33 +1,32 @@
-import FormData from "form-data";
-import Mailgun from "mailgun.js";
+import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const mailgun = new Mailgun(FormData);
-
-const mg = mailgun.client({
-    username: "api",
-    key: process.env.MAILGUN_API_KEY,
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD
+    },
 });
 
-const fromEmail = process.env.MAILGUN_FROM_EMAIL;
+const fromEmail = process.env.SMTP_USER;
 
 export const sendEmail = async (to, subject, html) => {
     try {
-        const data = await mg.messages.create(process.env.MAILGUN_DOMAIN, {
+        const data = await transporter.sendMail({
             from: fromEmail,
             to,
             subject,
             html,
         });
 
-        console.log(data);
+        console.log("Email sent:", data);
         return true;
-    }
-
+    } 
     catch (error) {
-        console.error("Error sending email: ", error);
+        console.error("Error sending email:", error);
         return false;
     }
-}
+};

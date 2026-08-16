@@ -31,7 +31,7 @@ export const useGetWorkspaceStatsQuery = (workspaceId: string) => {
     });
 }
 
-export const useGetWorkspaceMembersQuery = (workspaceId: string) => {
+export const useGetWorkspaceDetailsQuery = (workspaceId: string) => {
     return useQuery({
         queryKey: ["workspace", workspaceId, "details"],
         queryFn: async () => fetchData(`/workspaces/${workspaceId}`),
@@ -67,3 +67,10 @@ export const useDeleteWorkspaceMutation = () => {
             deleteData(`/workspaces/${workspaceId}`),
     });
 };
+
+export const useInviteMemberMutation = () => {
+    return useMutation({
+        mutationFn: async (data : { email: string; role: string; workspaceId: string }) =>
+            postData(`/workspaces/${data.workspaceId}/invite-member`, data),
+    });
+}

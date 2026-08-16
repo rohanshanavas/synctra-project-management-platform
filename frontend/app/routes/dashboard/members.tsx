@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Loader } from '@/components/ui/loader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useGetWorkspaceMembersQuery } from '@/hooks/useWorkspace';
+import { useGetWorkspaceDetailsQuery } from '@/hooks/useWorkspace';
 import type { WorkSpace } from '@/types';
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
@@ -43,7 +43,7 @@ const Members = () => {
 
     }, [searchParams]);
 
-    const { data, isLoading } = useGetWorkspaceMembersQuery(workspaceId || "") as {
+    const { data, isLoading } = useGetWorkspaceDetailsQuery(workspaceId || "") as {
         data: WorkSpace;
         isLoading: boolean;
     };

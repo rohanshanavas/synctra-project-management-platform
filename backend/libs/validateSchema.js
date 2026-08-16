@@ -25,6 +25,11 @@ const emailSchema = z.object({
     email: z.string().email("Please enter a valid email address"),
 });
 
+const inviteMemberSchema = z.object({
+    email: z.string().email("Please enter a valid email address"),
+    role: z.enum(["admin", "member", "viewer"], "Role must be one of Admin, Member, or Viewer")
+});
+
 const workspaceSchema = z.object({
     name: z.string().min(1, "Workspace name is required"),
     description: z.string().optional(),
@@ -69,6 +74,7 @@ export {
     verifyEmailSchema,
     resetPasswordSchema,
     emailSchema,
+    inviteMemberSchema,
     workspaceSchema,
     workspaceUpdateSchema,
     transferWorkspaceOwnershipSchema,
