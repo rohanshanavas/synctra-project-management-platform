@@ -186,11 +186,8 @@ const getWorkspaces = async (req, res) => {
 const getWorkspaceDetails = async (req, res) => {
     try {
         const { workspaceId } = req.params;
-        const userId = req.user._id;
-        const workspace = await Workspace.findOne({
-            _id: workspaceId,
-            "members.user": userId
-        }).populate("members.user", "name email profilePicture");
+
+        const workspace = await Workspace.findById({ _id: workspaceId }).populate("members.user", "name email profilePicture");
 
         if (!workspace) {
             return res.status(404).json({ message: "Workspace not found" });
@@ -220,12 +217,8 @@ const getWorkspaceProjects = async (req, res) => {
         const projects = await Project.find({
             workspace: workspaceId,
             isArchived: false,
-            // members: { $in: [userId] }
-        })
-            //.populate("tasks", "status")
-            .sort({ createdAt: -1 });
-
-
+            "members.user": { $in: [userId] }
+        }).sort({ createdAt: -1 });
 
         res.status(200).json({ projects, workspace });
     }
@@ -546,7 +539,7 @@ const acceptInviteByToken = async (req, res) => {
 
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
 
-        const { user, workspaceId, role } = decodedToken;
+        const { userId, workspaceId, role } = decodedToken;
 
         const workspace = await Workspace.findById(workspaceId);
 
@@ -554,13 +547,13 @@ const acceptInviteByToken = async (req, res) => {
             return res.status(404).json({ message: "Workspace not found" });
         }
 
-        const isMember = workspace.members.some((member) => member.user.toString() === user.toString());
+        const isMember = workspace.members.some((member) => member.user.toString() === userId.toString());
 
         if (isMember) {
             return res.status(400).json({ message: "You are already a member of this workspace" });
         }
 
-        const inviteInfo = await WorkspaceInvite.findOne({ user: user, workspaceId: workspaceId });
+        const inviteInfo = await WorkspaceInvite.findOne({ user: userId, workspaceId: workspaceId });
 
         if (!inviteInfo) {
             return res.status(404).json({ message: "Invitation not found" });
@@ -571,7 +564,7 @@ const acceptInviteByToken = async (req, res) => {
         }
 
         workspace.members.push({
-            user: user,
+            user: userId,
             role: role || "member",
             joinedAt: new Date()
         });
@@ -580,7 +573,7 @@ const acceptInviteByToken = async (req, res) => {
 
         await Promise.all([
             WorkspaceInvite.deleteOne({ _id: inviteInfo._id }),
-            recordActivity(user, "joined_workspace", "Workspace", workspaceId, { description: `Joined the workspace "${workspace.name}"` })
+            recordActivity(userId, "joined_workspace", "Workspace", workspaceId, { description: `Joined the workspace "${workspace.name}"` })
         ]);
 
         res.status(200).json({ message: "Invitation accepted successfully" });

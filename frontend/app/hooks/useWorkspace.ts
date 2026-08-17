@@ -70,7 +70,21 @@ export const useDeleteWorkspaceMutation = () => {
 
 export const useInviteMemberMutation = () => {
     return useMutation({
-        mutationFn: async (data : { email: string; role: string; workspaceId: string }) =>
+        mutationFn: async (data: { email: string; role: string; workspaceId: string }) =>
             postData(`/workspaces/${data.workspaceId}/invite-member`, data),
+    });
+}
+
+export const useAcceptInviteByTokenMutation = () => {
+    return useMutation({
+        mutationFn: async (token: string) =>
+            postData(`/workspaces/accept-invite-token`, { token }),
+    });
+}
+
+export const useAcceptInviteMutation = () => {
+    return useMutation({
+        mutationFn: async (workspaceId: string) =>
+            postData(`/workspaces/${workspaceId}/accept-invite`, {}),
     });
 }

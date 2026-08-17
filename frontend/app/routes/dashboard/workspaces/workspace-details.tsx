@@ -20,8 +20,8 @@ const WorkspaceDetails = () => {
 
     const { data, isLoading } = useGetWorkspaceQuery(workspaceId) as {
         data: {
-            workspace: WorkSpace
-            , projects: Project[]
+            workspace: WorkSpace, 
+            projects: Project[]
         };
         isLoading: boolean;
     };
