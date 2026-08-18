@@ -1,0 +1,34 @@
+import express from "express";
+import authMiddleware from "../middleware/authMiddleware.js";
+import { changePassword, getUserProfile, updateUserProfile } from "../controllers/user.js";
+import { validateRequest } from "zod-express-middleware";
+import { z } from "zod";
+
+const router = express.Router();
+
+router.get("/profile", authMiddleware, getUserProfile);
+
+router.put("/profile",
+    authMiddleware,
+    validateRequest({
+        body: z.object({
+            name: z.string(),
+            profilePicture: z.string().optional()
+        })
+    }),
+    updateUserProfile
+);
+
+router.put("/change-password",
+    authMiddleware,
+    validateRequest({
+        body: z.object({
+            currentPassword: z.string(),
+            newPassword: z.string().min(8, "New password must be at least 8 characters long"),
+            confirmPassword: z.string()
+        })
+    }),
+    changePassword
+);
+
+export default router;

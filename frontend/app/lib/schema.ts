@@ -60,3 +60,17 @@ export const inviteMemberSchema = z.object({
     email: z.email("Please enter a valid email address"),
     role: z.enum(["viewer", "admin", "member"], "Please select a valid role")
 });
+
+export const changePasswordSchema = z.object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: z.string().min(8, "New password must be at least 8 characters long"),
+    confirmPassword: z.string().min(8, "Confirm password must be at least 8 characters long")
+}).refine((data) => data.newPassword === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+});
+
+export const profileSchema = z.object({
+    name: z.string().min(1, "Name is required"),
+    profilePicture: z.string().optional()
+});
