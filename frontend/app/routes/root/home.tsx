@@ -11,7 +11,6 @@ import {
   CheckCircle2,
   ChevronRight,
   CircleCheck,
-  CircleDot,
   ChevronsRight,
   FolderKanban,
   LayoutDashboard,
@@ -36,6 +35,35 @@ export function meta({ }: Route.MetaArgs) {
 }
 
 /* -------------------------------------------------------------------------- */
+/* Scroll reveal                                                              */
+/* -------------------------------------------------------------------------- */
+
+const useScrollReveal = () => {
+  React.useEffect(() => {
+    const elements = document.querySelectorAll(".scroll-reveal");
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.15,
+        rootMargin: "0px 0px -60px 0px",
+      }
+    );
+
+    elements.forEach((element) => observer.observe(element));
+
+    return () => observer.disconnect();
+  }, []);
+};
+
+/* -------------------------------------------------------------------------- */
 /* Shared helpers                                                             */
 /* -------------------------------------------------------------------------- */
 
@@ -52,7 +80,7 @@ const FeatureIcon = ({
 };
 
 /* -------------------------------------------------------------------------- */
-/* Dashboard preview                                                           */
+/* Dashboard preview                                                          */
 /* -------------------------------------------------------------------------- */
 
 const DashboardPreview = () => {
@@ -113,6 +141,30 @@ const DashboardPreview = () => {
 
       <div className="relative overflow-hidden rounded-[22px] border border-slate-200 bg-white p-2 shadow-[0_30px_90px_-35px_rgba(15,23,42,0.22)] sm:p-3">
         <div className="overflow-hidden rounded-[16px] border border-slate-200 bg-background">
+          {/* App Header */}
+          <div className="flex h-14 items-center justify-between border-b bg-background px-4 sm:px-5">
+            <div className="flex items-center gap-3">
+              <div className="hidden items-center gap-2 rounded-lg border px-3 py-1.5 sm:flex">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500 text-sm font-semibold text-white">
+                  S
+                </div>
+
+                <span className="text-xs font-medium text-slate-800">
+                  Synctra
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg">
+                <Bell className="h-4 w-4 text-slate-500" />
+              </div>
+
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-xs font-medium text-white">
+                S
+              </div>
+            </div>
+          </div>
 
           <div className="grid md:grid-cols-[190px_1fr]">
             {/* Sidebar */}
@@ -120,7 +172,10 @@ const DashboardPreview = () => {
               <div className="flex h-14 items-center border-b px-4">
                 <div className="flex items-center gap-2">
                   <Wrench className="h-5 w-5 text-blue-600" />
-                  <span className="text-sm font-semibold">Synctra</span>
+
+                  <span className="text-sm font-semibold">
+                    Synctra
+                  </span>
                 </div>
 
                 <ChevronsRight className="ml-auto h-4 w-4 text-slate-400" />
@@ -151,31 +206,8 @@ const DashboardPreview = () => {
               </div>
             </aside>
 
+            {/* Dashboard */}
             <div className="min-w-0">
-              <div className="flex h-14 items-center justify-between border-b bg-background px-4 sm:px-5">
-                <div className="flex items-center gap-3">
-                  <div className="hidden items-center gap-2 rounded-lg border px-3 py-1.5 sm:flex">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500 text-sm font-semibold text-white">
-                      S
-                    </div>
-                    <span className="text-xs font-medium text-slate-800">
-                      Synctra
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg">
-                    <Bell className="h-4 w-4 text-slate-500" />
-                  </div>
-
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-xs font-medium text-white">
-                    S
-                  </div>
-                </div>
-              </div>
-
-              {/* Dashboard */}
               <div className="min-w-0 bg-white p-4 sm:p-6">
                 <div>
                   <h3 className="text-xl font-bold tracking-tight">
@@ -221,6 +253,7 @@ const DashboardPreview = () => {
                         <h4 className="text-sm font-medium">
                           Task Trends
                         </h4>
+
                         <p className="mt-1 text-xs text-muted-foreground">
                           Daily Task Status Changes
                         </p>
@@ -231,8 +264,7 @@ const DashboardPreview = () => {
 
                     <div className="px-3 pb-4 pt-3 sm:px-5">
                       <div className="relative h-48">
-                        {/* horizontal grid */}
-                        <div className="absolute inset-x-0 top-0 bottom-7 flex flex-col justify-between">
+                        <div className="absolute inset-x-0 bottom-7 top-0 flex flex-col justify-between">
                           {[4, 3, 2, 1, 0].map((n) => (
                             <div
                               key={n}
@@ -247,7 +279,6 @@ const DashboardPreview = () => {
                           ))}
                         </div>
 
-                        {/* Line chart */}
                         <svg
                           viewBox="0 0 620 180"
                           className="absolute left-7 right-0 top-0 h-40 w-[calc(100%-28px)]"
@@ -284,7 +315,6 @@ const DashboardPreview = () => {
                           />
                         </svg>
 
-                        {/* X labels */}
                         <div className="absolute bottom-0 left-7 right-0 flex justify-between">
                           {[
                             "Sun",
@@ -331,6 +361,7 @@ const DashboardPreview = () => {
                         <h4 className="text-sm font-medium">
                           Project Status
                         </h4>
+
                         <p className="mt-1 text-xs text-muted-foreground">
                           Project Status Breakdown
                         </p>
@@ -351,6 +382,7 @@ const DashboardPreview = () => {
 
                         <div className="relative text-center">
                           <p className="text-xl font-bold">11</p>
+
                           <p className="text-[10px] text-muted-foreground">
                             Projects
                           </p>
@@ -363,6 +395,7 @@ const DashboardPreview = () => {
                             <span className="h-2 w-2 rounded-full bg-emerald-500" />
                             Completed
                           </span>
+
                           <span className="font-medium">20%</span>
                         </div>
 
@@ -371,6 +404,7 @@ const DashboardPreview = () => {
                             <span className="h-2 w-2 rounded-full bg-orange-400" />
                             In Progress
                           </span>
+
                           <span className="font-medium">40%</span>
                         </div>
 
@@ -379,6 +413,7 @@ const DashboardPreview = () => {
                             <span className="h-2 w-2 rounded-full bg-blue-500" />
                             Planning
                           </span>
+
                           <span className="font-medium">40%</span>
                         </div>
                       </div>
@@ -395,6 +430,7 @@ const DashboardPreview = () => {
                         <h4 className="text-sm font-medium">
                           Task Priority
                         </h4>
+
                         <p className="mt-1 text-xs text-muted-foreground">
                           Task Priority Breakdown
                         </p>
@@ -440,6 +476,7 @@ const DashboardPreview = () => {
                         <h4 className="text-sm font-medium">
                           Workspace Productivity
                         </h4>
+
                         <p className="mt-1 text-xs text-muted-foreground">
                           Task Completion by Project
                         </p>
@@ -450,7 +487,7 @@ const DashboardPreview = () => {
 
                     <div className="px-4 pb-5 pt-4">
                       <div className="relative h-44">
-                        <div className="absolute inset-x-0 top-0 bottom-7 flex flex-col justify-between">
+                        <div className="absolute inset-x-0 bottom-7 top-0 flex flex-col justify-between">
                           {[4, 3, 2, 1, 0].map((n) => (
                             <div
                               key={n}
@@ -467,11 +504,31 @@ const DashboardPreview = () => {
 
                         <div className="absolute bottom-7 left-7 right-0 top-2 flex items-end justify-around gap-2">
                           {[
-                            { name: "Website", total: 4, completed: 1 },
-                            { name: "Mobile", total: 3, completed: 2 },
-                            { name: "API", total: 2, completed: 1 },
-                            { name: "Testing", total: 3, completed: 2 },
-                            { name: "Launch", total: 2, completed: 2 },
+                            {
+                              name: "Website",
+                              total: 4,
+                              completed: 1,
+                            },
+                            {
+                              name: "Mobile",
+                              total: 3,
+                              completed: 2,
+                            },
+                            {
+                              name: "API",
+                              total: 2,
+                              completed: 1,
+                            },
+                            {
+                              name: "Testing",
+                              total: 3,
+                              completed: 2,
+                            },
+                            {
+                              name: "Launch",
+                              total: 2,
+                              completed: 2,
+                            },
                           ].map((project) => (
                             <div
                               key={project.name}
@@ -480,14 +537,16 @@ const DashboardPreview = () => {
                               <div
                                 className="w-4 rounded-t-sm bg-blue-500"
                                 style={{
-                                  height: `${(project.completed / 4) * 100}%`,
+                                  height: `${(project.completed / 4) * 100
+                                    }%`,
                                 }}
                               />
 
                               <div
                                 className="w-4 rounded-t-sm bg-black"
                                 style={{
-                                  height: `${(project.total / 4) * 100}%`,
+                                  height: `${(project.total / 4) * 100
+                                    }%`,
                                 }}
                               />
                             </div>
@@ -573,12 +632,17 @@ const features = [
 const Homepage = () => {
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
+  useScrollReveal();
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-6 lg:px-8">
-          <Link to="/" className="flex items-center gap-2.5">
+          <Link
+            to="/"
+            className="flex items-center gap-2.5"
+          >
             <Wrench className="h-6 w-6 text-blue-600" />
 
             <span className="text-xl font-semibold tracking-tight">
@@ -586,24 +650,26 @@ const Homepage = () => {
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-8 md:flex">
-            <a
-              href="#features"
-              className="text-sm text-muted-foreground transition hover:text-foreground"
-            >
-              Features
-            </a>
+          {/* Desktop Navigation */}
+          <nav className="hidden items-center gap-1 md:flex">
 
             <a
               href="#dashboard"
-              className="text-sm text-muted-foreground transition hover:text-foreground"
+              className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground"
             >
               Dashboard
             </a>
 
             <a
+              href="#features"
+              className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground"
+            >
+              Features
+            </a>
+
+            <a
               href="#workflow"
-              className="text-sm text-muted-foreground transition hover:text-foreground"
+              className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground"
             >
               How it works
             </a>
@@ -626,6 +692,7 @@ const Homepage = () => {
             </Link>
           </div>
 
+          {/* Mobile menu button */}
           <button
             type="button"
             className="flex h-9 w-9 items-center justify-center rounded-lg border md:hidden"
@@ -640,41 +707,52 @@ const Homepage = () => {
           </button>
         </div>
 
+        {/* Mobile Navigation */}
         {mobileOpen && (
           <div className="border-t bg-background px-5 py-4 md:hidden">
-            <div className="flex flex-col gap-4">
-              <a
-                href="#features"
-                onClick={() => setMobileOpen(false)}
-                className="text-sm font-medium"
-              >
-                Features
-              </a>
+            <div className="flex flex-col gap-1">
 
               <a
                 href="#dashboard"
                 onClick={() => setMobileOpen(false)}
-                className="text-sm font-medium"
+                className="rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
               >
                 Dashboard
               </a>
 
               <a
+                href="#features"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
+              >
+                Features
+              </a>
+
+              <a
                 href="#workflow"
                 onClick={() => setMobileOpen(false)}
-                className="text-sm font-medium"
+                className="rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
               >
                 How it works
               </a>
 
-              <div className="flex gap-2 pt-2">
-                <Link to="/sign-in" className="flex-1">
-                  <Button variant="outline" className="w-full rounded-lg">
+              <div className="flex gap-2 pt-3">
+                <Link
+                  to="/sign-in"
+                  className="flex-1"
+                >
+                  <Button
+                    variant="outline"
+                    className="w-full rounded-lg"
+                  >
                     Sign in
                   </Button>
                 </Link>
 
-                <Link to="/sign-up" className="flex-1">
+                <Link
+                  to="/sign-up"
+                  className="flex-1"
+                >
                   <Button className="w-full rounded-lg bg-blue-600">
                     Get started
                   </Button>
@@ -686,9 +764,12 @@ const Homepage = () => {
       </header>
 
       <main>
-        {/* Hero */}
+        {/* ---------------------------------------------------------------- */}
+        {/* Hero                                                             */}
+        {/* ---------------------------------------------------------------- */}
+
         <section className="relative overflow-hidden">
-          <div className="absolute left-1/2 -top-65 h-130 w-225 -translate-x-1/2 rounded-full bg-blue-50 blur-3xl" />
+          <div className="absolute -top-65 left-1/2 h-130 w-225 -translate-x-1/2 rounded-full bg-blue-50 blur-3xl" />
 
           <div className="relative mx-auto max-w-7xl px-5 pb-20 pt-20 sm:px-6 sm:pb-24 sm:pt-24 lg:px-8 lg:pb-28 lg:pt-28">
             <div className="mx-auto max-w-3xl text-center">
@@ -702,7 +783,10 @@ const Homepage = () => {
 
               <h1 className="mt-7 text-balance text-4xl font-semibold tracking-tighter sm:text-5xl lg:text-7xl">
                 Everything your team needs to
-                <span className="text-blue-600"> stay in sync.</span>
+                <span className="text-blue-600">
+                  {" "}
+                  stay in sync.
+                </span>
               </h1>
 
               <p className="mx-auto mt-6 max-w-2xl text-pretty text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
@@ -726,7 +810,7 @@ const Homepage = () => {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="h-12 rounded-lg px-7 text-sm font-semibold"
+                    className="h-12 w-full rounded-lg px-7 text-sm font-semibold sm:w-auto"
                   >
                     Explore the dashboard
                     <ChevronRight className="ml-1.5 h-4 w-4" />
@@ -752,19 +836,26 @@ const Homepage = () => {
               </div>
             </div>
 
-            <div id="dashboard">
+            {/* Dashboard */}
+            <div
+              id="dashboard"
+              className="scroll-mt-24 scroll-reveal"
+            >
               <DashboardPreview />
             </div>
           </div>
         </section>
 
-        {/* Features */}
+        {/* ---------------------------------------------------------------- */}
+        {/* Features                                                         */}
+        {/* ---------------------------------------------------------------- */}
+
         <section
           id="features"
-          className="border-y bg-muted/30"
+          className="scroll-mt-24 border-y bg-muted/30"
         >
           <div className="mx-auto max-w-7xl px-5 py-20 sm:px-6 sm:py-24 lg:px-8">
-            <div className="mx-auto max-w-2xl text-center">
+            <div className="mx-auto max-w-2xl text-center scroll-reveal">
               <p className="text-sm font-semibold text-blue-600">
                 One workspace
               </p>
@@ -780,10 +871,13 @@ const Homepage = () => {
             </div>
 
             <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              {features.map((feature) => (
+              {features.map((feature, index) => (
                 <div
                   key={feature.title}
-                  className="rounded-xl border bg-background p-6 transition hover:-translate-y-1 hover:shadow-lg hover:shadow-slate-900/5"
+                  className="scroll-reveal rounded-xl border bg-background p-6 transition duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-slate-900/5"
+                  style={{
+                    transitionDelay: `${index * 100}ms`,
+                  }}
                 >
                   <FeatureIcon>
                     <feature.icon className="h-5 w-5" />
@@ -802,11 +896,17 @@ const Homepage = () => {
           </div>
         </section>
 
-        {/* Workflow */}
-        <section id="workflow">
+        {/* ---------------------------------------------------------------- */}
+        {/* Workflow                                                         */}
+        {/* ---------------------------------------------------------------- */}
+
+        <section
+          id="workflow"
+          className="scroll-mt-24"
+        >
           <div className="mx-auto max-w-7xl px-5 py-20 sm:px-6 sm:py-24 lg:px-8">
             <div className="grid gap-14 lg:grid-cols-2 lg:items-center">
-              <div>
+              <div className="scroll-reveal">
                 <p className="text-sm font-semibold text-blue-600">
                   Designed around the workflow
                 </p>
@@ -838,10 +938,13 @@ const Homepage = () => {
                       title: "Track the progress",
                       text: "Use status, priorities, activity, and analytics to stay informed.",
                     },
-                  ].map((step) => (
+                  ].map((step, index) => (
                     <div
                       key={step.number}
-                      className="flex gap-4"
+                      className="scroll-reveal flex gap-4"
+                      style={{
+                        transitionDelay: `${index * 100}ms`,
+                      }}
                     >
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-xs font-semibold text-blue-600">
                         {step.number}
@@ -871,7 +974,7 @@ const Homepage = () => {
               </div>
 
               {/* Mini workspace illustration */}
-              <div className="relative">
+              <div className="scroll-reveal relative">
                 <div className="absolute -inset-6 rounded-[30px] bg-blue-50 blur-2xl" />
 
                 <div className="relative rounded-2xl border bg-background p-4 shadow-xl shadow-slate-900/5 sm:p-5">
@@ -885,13 +988,17 @@ const Homepage = () => {
                         <p className="text-xs text-muted-foreground">
                           Workspace
                         </p>
+
                         <p className="mt-0.5 text-sm font-semibold">
                           Product Team
                         </p>
                       </div>
                     </div>
 
-                    <Badge variant="outline" className="rounded-full">
+                    <Badge
+                      variant="outline"
+                      className="rounded-full"
+                    >
                       8 members
                     </Badge>
                   </div>
@@ -923,6 +1030,7 @@ const Homepage = () => {
                             <p className="text-xs font-medium">
                               {project.title}
                             </p>
+
                             <p className="mt-1 text-[10px] text-muted-foreground">
                               Project
                             </p>
@@ -936,7 +1044,9 @@ const Homepage = () => {
                         <div className="mt-3 h-1.5 rounded-full bg-muted">
                           <div
                             className={`h-full rounded-full ${project.color}`}
-                            style={{ width: `${project.progress}%` }}
+                            style={{
+                              width: `${project.progress}%`,
+                            }}
                           />
                         </div>
                       </div>
@@ -948,21 +1058,30 @@ const Homepage = () => {
                       <p className="text-[10px] text-muted-foreground">
                         Projects
                       </p>
-                      <p className="mt-1 text-lg font-bold">11</p>
+
+                      <p className="mt-1 text-lg font-bold">
+                        11
+                      </p>
                     </div>
 
                     <div className="rounded-xl bg-muted/50 p-3">
                       <p className="text-[10px] text-muted-foreground">
                         Tasks
                       </p>
-                      <p className="mt-1 text-lg font-bold">42</p>
+
+                      <p className="mt-1 text-lg font-bold">
+                        42
+                      </p>
                     </div>
 
                     <div className="rounded-xl bg-muted/50 p-3">
                       <p className="text-[10px] text-muted-foreground">
                         Members
                       </p>
-                      <p className="mt-1 text-lg font-bold">8</p>
+
+                      <p className="mt-1 text-lg font-bold">
+                        8
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -971,13 +1090,16 @@ const Homepage = () => {
           </div>
         </section>
 
-        {/* Final CTA */}
+        {/* ---------------------------------------------------------------- */}
+        {/* Final CTA                                                        */}
+        {/* ---------------------------------------------------------------- */}
+
         <section className="border-t bg-muted/30">
           <div className="mx-auto max-w-7xl px-5 py-20 sm:px-6 sm:py-24 lg:px-8">
             <div className="relative overflow-hidden rounded-2xl bg-slate-950 px-6 py-14 text-center sm:px-10">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.18),transparent_58%)]" />
 
-              <div className="relative mx-auto max-w-2xl">
+              <div className="relative mx-auto max-w-2xl scroll-reveal">
                 <p className="text-sm font-medium text-blue-400">
                   Bring your work together
                 </p>
@@ -1013,7 +1135,10 @@ const Homepage = () => {
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-7 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
             <Wrench className="h-5 w-5 text-blue-600" />
-            <span className="text-sm font-semibold">Synctra</span>
+
+            <span className="text-sm font-semibold">
+              Synctra
+            </span>
           </div>
 
           <p className="text-xs text-muted-foreground">
@@ -1037,6 +1162,38 @@ const Homepage = () => {
           </div>
         </div>
       </footer>
+
+      {/* Scroll reveal styles */}
+      <style>{`
+        html {
+          scroll-behavior: smooth;
+        }
+
+        .scroll-reveal {
+          opacity: 0;
+          transform: translateY(40px);
+          transition:
+            opacity 700ms ease,
+            transform 700ms ease;
+        }
+
+        .scroll-reveal.is-visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          html {
+            scroll-behavior: auto;
+          }
+
+          .scroll-reveal {
+            opacity: 1;
+            transform: none;
+            transition: none;
+          }
+        }
+      `}</style>
     </div>
   );
 };
