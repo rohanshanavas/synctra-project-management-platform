@@ -1,4 +1,4 @@
-# Synctra
+# Synctra - Project Management Platform
 
 A full-stack project management platform for organizing workspaces, projects, tasks, and teams. Synctra provides a dashboard for tracking project status, task priority, task trends, and workspace productivity.
 
