@@ -112,7 +112,7 @@ Set the required backend environment variables in `backend/.env`:
 
 ```env
 PORT=5000
-MONGO_URI=your_mongodb_connection_string
+MONGO_URI=mongodb_uri_here
 JWT_SECRET=your_jwt_secret
 FRONTEND_URL=http://localhost:5173
 SMTP_USER=your_email@example.com
@@ -146,7 +146,7 @@ Copy-Item .env.example .env
 Set the frontend API URL:
 
 ```env
-VITE_API_URL=http://localhost:5000/api-v1
+VITE_API_URL=http://localhost:5000/api
 ```
 
 Start the frontend:
