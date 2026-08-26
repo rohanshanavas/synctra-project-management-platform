@@ -29,14 +29,14 @@ export const SidebarComponent = ({ currentWorkSpace }: { currentWorkSpace: WorkS
                     {
                         !isCollapsed && (
                             <div className="flex items-center gap-2">
-                                <Wrench className="size-6 text-blue-600" />
+                                <img src="/synctra-icon.png" alt="Synctra Logo" className="h-6 w-6" />
                                 <span className="text-lg font-semibold hidden md:block">Synctra</span>
                             </div>
                         )
                     }
                     {
                         isCollapsed && (
-                            <Wrench className="size-6 text-blue-600" />
+                            <img src="/synctra-icon.png" alt="Synctra Logo" className="h-6 w-6 shrink-0 object-contain" />
                         )
                     }
                 </Link>

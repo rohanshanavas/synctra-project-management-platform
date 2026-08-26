@@ -3,7 +3,5 @@ node_modules
 .git
 .gitignore
 npm-debug.log
-build
-.react-router
 Dockerfile
 .dockerignore
