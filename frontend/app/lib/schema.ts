@@ -43,7 +43,7 @@ export const projectSchema = z.object({
     members: z.array(z.object({
         user: z.string(),
         role: z.enum(["Manager", "Contributor", "Viewer"])
-    })).optional(),
+    })).min(1, "At least one member is required"),
     tags: z.string().optional()
 });
 
