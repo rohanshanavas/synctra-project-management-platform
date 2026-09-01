@@ -1,0 +1,51 @@
+name: CI
+
+on:
+    push:
+        branches:
+            - main
+
+    pull_request:
+        branches:
+            - main
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            # Get the repository onto the GitHub Actions runner
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            # Install the same major Node.js version used by the application
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 24
+                  cache: npm
+
+            # Install frontend dependencies
+            - name: Install frontend dependencies
+              working-directory: ./frontend
+              run: npm ci
+
+            # Build the frontend
+            - name: Build frontend
+              working-directory: ./frontend
+              env:
+                  VITE_API_URL: http://localhost:5000/api-v1
+              run: npm run build
+
+            # Install backend dependencies
+            - name: Install backend dependencies
+              working-directory: ./backend
+              run: npm ci
+
+            # Build the backend Docker image
+            - name: Build backend Docker image
+              run: docker build -t synctra-backend ./backend
+
+            # Build the frontend Docker image
+            - name: Build frontend Docker image
+              run: docker build --build-arg VITE_API_URL=http://localhost:5000/api-v1 -t synctra-frontend ./frontend

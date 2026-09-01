@@ -1,5 +1,6 @@
 services:
     backend:
+        container_name: synctra-backend
         build:
             context: ./backend
             dockerfile: Dockerfile
@@ -9,6 +10,7 @@ services:
             - ./backend/.env
 
     frontend:
+        container_name: synctra-frontend
         build:
             context: ./frontend
             dockerfile: Dockerfile
@@ -16,4 +18,3 @@ services:
                 VITE_API_URL: http://localhost:5000/api-v1
         ports:
             - "3000:3000"
-        
