@@ -53,6 +53,11 @@ jobs:
               working-directory: ./backend
               run: npm ci
 
+            # Test backend endpoints
+            - name: Run backend tests
+              working-directory: ./backend
+              run: npm test
+
             # ----------------------------------------
             # Docker
             # ----------------------------------------
