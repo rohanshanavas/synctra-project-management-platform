@@ -1,3 +1,9 @@
+import { jest } from "@jest/globals";
+
+jest.unstable_mockModule("../libs/sendEmail.js", () => ({
+    default: jest.fn().mockResolvedValue(true),
+}));
+
 import request from "supertest";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
