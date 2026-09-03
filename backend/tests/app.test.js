@@ -3,14 +3,14 @@ import { jest } from "@jest/globals";
 const mockSendEmail = jest.fn().mockResolvedValue(true);
 
 jest.unstable_mockModule("../libs/sendEmail.js", () => ({
-    default: mockSendEmail,
+    sendEmail: mockSendEmail,
 }));
 
 import request from "supertest";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-import app from "../app.js";
+const { default: app } = await import("../app.js");
 
 import User from "../models/user.js";
 import Workspace from "../models/workspace.js";
@@ -214,6 +214,12 @@ describe("Authentication", () => {
 
         // Password should be stored hashed rather than plain text.
         expect(user.password).not.toBe("password123");
+
+        expect(mockSendEmail).toHaveBeenCalledWith(
+            "register@example.com",
+            "Email Verification",
+            expect.stringContaining("Verify Email")
+        );
     });
 
 
