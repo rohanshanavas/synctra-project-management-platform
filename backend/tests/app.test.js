@@ -1,7 +1,9 @@
 import { jest } from "@jest/globals";
 
+const mockSendEmail = jest.fn().mockResolvedValue(true);
+
 jest.unstable_mockModule("../libs/sendEmail.js", () => ({
-    default: jest.fn().mockResolvedValue(true),
+    default: mockSendEmail,
 }));
 
 import request from "supertest";
