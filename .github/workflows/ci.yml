@@ -13,12 +13,22 @@ jobs:
     build:
         runs-on: ubuntu-latest
 
+        permissions:
+            id-token: write
+            contents: read
+
         steps:
-            # Get the repository onto the GitHub Actions runner
+            # ----------------------------------------
+            # Checkout
+            # ----------------------------------------
+
             - name: Checkout repository
               uses: actions/checkout@v4
 
-            # Install the same major Node.js version and cache dependencies
+            # ----------------------------------------
+            # Node.js
+            # ----------------------------------------
+
             - name: Set up Node.js
               uses: actions/setup-node@v4
               with:
@@ -32,17 +42,14 @@ jobs:
             # Frontend
             # ----------------------------------------
 
-            # Install frontend dependencies
             - name: Install frontend dependencies
               working-directory: ./frontend
               run: npm ci
 
-            # Run frontend tests
             - name: Run frontend tests
               working-directory: ./frontend
               run: npm test
 
-            # Build the frontend
             - name: Build frontend
               working-directory: ./frontend
               env:
@@ -53,24 +60,54 @@ jobs:
             # Backend
             # ----------------------------------------
 
-            # Install backend dependencies
             - name: Install backend dependencies
               working-directory: ./backend
               run: npm ci
 
-            # Test backend endpoints
             - name: Run backend tests
               working-directory: ./backend
               run: npm test
 
             # ----------------------------------------
-            # Docker
+            # AWS
             # ----------------------------------------
 
-            # Build the backend Docker image
-            - name: Build backend Docker image
-              run: docker build -t synctra-backend ./backend
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v5
+              with:
+                  role-to-assume: arn:aws:iam::643285091347:role/GitHubActions-Synctra
+                  aws-region: eu-west-1
 
-            # Build the frontend Docker image
-            - name: Build frontend Docker image
-              run: docker build --build-arg VITE_API_URL=http://localhost:5000/api-v1 -t synctra-frontend ./frontend
+            # ----------------------------------------
+            # ECR
+            # ----------------------------------------
+
+            - name: Login to Amazon ECR
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@v2
+
+            # ----------------------------------------
+            # Backend Docker image
+            # ----------------------------------------
+
+            - name: Build, tag, and push backend image
+              env:
+                  REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+                  REPOSITORY: synctra-backend
+                  IMAGE_TAG: ${{ github.sha }}
+              run: |
+                  docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./backend
+                  docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+            # ----------------------------------------
+            # Frontend Docker image
+            # ----------------------------------------
+
+            - name: Build, tag, and push frontend image
+              env:
+                  REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+                  REPOSITORY: synctra-frontend
+                  IMAGE_TAG: ${{ github.sha }}
+              run: |
+                  docker build --build-arg VITE_API_URL=http://localhost:5000/api-v1 -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./frontend
+                  docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
