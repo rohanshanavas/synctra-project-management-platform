@@ -78,6 +78,12 @@ jobs:
                   role-to-assume: arn:aws:iam::643285091347:role/GitHubActions-Synctra
                   aws-region: eu-west-1
 
+            - name: Configure kubectl
+              run: aws eks update-kubeconfig --region eu-west-1 --name synctra-dev-eks
+
+            - name: Verify EKS access
+              run: kubectl get nodes
+
             # ----------------------------------------
             # ECR
             # ----------------------------------------

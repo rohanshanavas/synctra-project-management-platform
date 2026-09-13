@@ -21,12 +21,14 @@ spec:
       containers:
         - name: backend
 
-          image: 643285091347.dkr.ecr.eu-west-1.amazonaws.com/synctra-backend:07c779e7dac9269cc745e3275d8401065380b23d
+          image: 643285091347.dkr.ecr.eu-west-1.amazonaws.com/synctra-backend:5c9ea0c857d2ea3dac2b624f11a7eb453c09f181
 
           ports:
             - containerPort: 5000
 
           envFrom:
+            - configMapRef:
+                name: backend-config
             - secretRef:
                 name: backend-secrets
 
@@ -37,3 +39,28 @@ spec:
             limits:
               cpu: "500m"
               memory: "512Mi"
+
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            failureThreshold: 30
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3

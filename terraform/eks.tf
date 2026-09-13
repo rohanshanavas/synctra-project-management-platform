@@ -97,3 +97,19 @@ resource "aws_eks_pod_identity_association" "aws_load_balancer_controller" {
     aws_iam_role_policy_attachment.aws_load_balancer_controller
   ]
 }
+
+resource "aws_eks_access_entry" "github_actions" {
+  cluster_name  = aws_eks_cluster.main.name
+  principal_arn = "arn:aws:iam::643285091347:role/GitHubActions-Synctra"
+  type          = "STANDARD"
+}
+
+resource "aws_eks_access_policy_association" "github_actions_admin" {
+  cluster_name  = aws_eks_cluster.main.name
+  principal_arn = aws_eks_access_entry.github_actions.principal_arn
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+
+  access_scope {
+    type = "cluster"
+  }
+}
