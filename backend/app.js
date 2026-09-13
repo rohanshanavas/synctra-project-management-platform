@@ -23,6 +23,12 @@ app.get("/", (req, res) => {
     });
 });
 
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        status: "ok",
+    });
+});
+
 app.use("/api-v1", routes);
 
 // Error middleware
