@@ -109,5 +109,5 @@ jobs:
                   REPOSITORY: synctra-frontend
                   IMAGE_TAG: ${{ github.sha }}
               run: |
-                  docker build --build-arg VITE_API_URL=http://localhost:5000/api-v1 -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./frontend
+                  docker build --build-arg VITE_API_URL=/api-v1 -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./frontend
                   docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG

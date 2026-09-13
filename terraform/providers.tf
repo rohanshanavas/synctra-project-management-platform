@@ -1,10 +1,10 @@
 provider "aws" {
-  region = "eu-west-1"
+  region = var.aws_region
 
   default_tags {
     tags = {
       Project     = "Synctra"
-      Environment = "dev"
+      Environment = var.environment
       ManagedBy   = "Terraform"
     }
   }
