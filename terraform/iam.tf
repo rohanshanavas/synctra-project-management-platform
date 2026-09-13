@@ -145,3 +145,24 @@ resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller" {
 
   policy_arn = "arn:aws:iam::643285091347:policy/AWSLoadBalancerControllerIAMPolicy"
 }
+
+resource "aws_iam_role_policy" "github_actions_eks" {
+  name = "${var.project_name}-${var.environment}-github-actions-eks"
+  role = "GitHubActions-Synctra"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Effect = "Allow"
+
+        Action = [
+          "eks:DescribeCluster"
+        ]
+
+        Resource = aws_eks_cluster.main.arn
+      }
+    ]
+  })
+}
