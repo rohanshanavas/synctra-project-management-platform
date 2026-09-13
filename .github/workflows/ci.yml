@@ -53,7 +53,7 @@ jobs:
             - name: Build frontend
               working-directory: ./frontend
               env:
-                  VITE_API_URL: http://localhost:5000/api-v1
+                  VITE_API_URL: /api-v1
               run: npm run build
 
             # ----------------------------------------
@@ -70,9 +70,12 @@ jobs:
 
             # ----------------------------------------
             # AWS
+            # Only run deployment-related AWS steps
+            # on pushes to main
             # ----------------------------------------
 
             - name: Configure AWS credentials
+              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
               uses: aws-actions/configure-aws-credentials@v5
               with:
                   role-to-assume: arn:aws:iam::643285091347:role/GitHubActions-Synctra
@@ -83,6 +86,7 @@ jobs:
             # ----------------------------------------
 
             - name: Login to Amazon ECR
+              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
               id: login-ecr
               uses: aws-actions/amazon-ecr-login@v2
 
@@ -91,26 +95,37 @@ jobs:
             # ----------------------------------------
 
             - name: Build, tag, and push backend image
+              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
               env:
                   REGISTRY: ${{ steps.login-ecr.outputs.registry }}
                   REPOSITORY: synctra-backend
                   IMAGE_TAG: ${{ github.sha }}
               run: |
-                  docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./backend
-                  docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+                  docker build \
+                    -t $REGISTRY/$REPOSITORY:$IMAGE_TAG \
+                    ./backend
+
+                  docker push \
+                    $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
             # ----------------------------------------
             # Frontend Docker image
             # ----------------------------------------
 
             - name: Build, tag, and push frontend image
+              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
               env:
                   REGISTRY: ${{ steps.login-ecr.outputs.registry }}
                   REPOSITORY: synctra-frontend
                   IMAGE_TAG: ${{ github.sha }}
               run: |
-                  docker build --build-arg VITE_API_URL=/api-v1 -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./frontend
-                  docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+                  docker build \
+                    --build-arg VITE_API_URL=/api-v1 \
+                    -t $REGISTRY/$REPOSITORY:$IMAGE_TAG \
+                    ./frontend
+
+                  docker push \
+                    $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
             # ----------------------------------------
             # Kubernetes
@@ -118,25 +133,39 @@ jobs:
 
             - name: Configure kubectl
               if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-              run: aws eks update-kubeconfig --region eu-west-1 --name synctra-dev-eks
+              run: |
+                  aws eks update-kubeconfig \
+                    --region eu-west-1 \
+                    --name synctra-dev-eks
 
             - name: Verify EKS access
               if: github.event_name == 'push' && github.ref == 'refs/heads/main'
               run: kubectl get nodes
 
             # ----------------------------------------
-            # Deploy backend
+            # Bootstrap namespace and cluster resources
             # ----------------------------------------
 
-            - name: Deploy backend to EKS
+            - name: Apply Kubernetes foundation
               if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-              env:
-                  REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-                  IMAGE_TAG: ${{ github.sha }}
-              run: kubectl set image deployment/backend backend=$REGISTRY/synctra-backend:$IMAGE_TAG -n synctra
+              run: |
+                  kubectl apply -f kubernetes/namespace.yaml
+                  kubectl apply -f kubernetes/backend-configmap.yaml
+                  kubectl apply -f kubernetes/backend-service-account.yaml
+                  kubectl apply -f kubernetes/secret-provider-class.yaml
 
             # ----------------------------------------
-            # Deploy frontend
+            # Apply services
+            # ----------------------------------------
+
+            - name: Apply Kubernetes services
+              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+              run: |
+                  kubectl apply -f kubernetes/backend-service.yaml
+                  kubectl apply -f kubernetes/frontend-service.yaml
+
+            # ----------------------------------------
+            # Apply frontend
             # ----------------------------------------
 
             - name: Deploy frontend to EKS
@@ -144,7 +173,85 @@ jobs:
               env:
                   REGISTRY: ${{ steps.login-ecr.outputs.registry }}
                   IMAGE_TAG: ${{ github.sha }}
-              run: kubectl set image deployment/frontend frontend=$REGISTRY/synctra-frontend:$IMAGE_TAG -n synctra
+              run: |
+                  kubectl apply -f kubernetes/frontend-deployment.yaml
+
+                  kubectl set image deployment/frontend \
+                    frontend=$REGISTRY/synctra-frontend:$IMAGE_TAG \
+                    -n synctra
+
+            # ----------------------------------------
+            # Apply ingress
+            # ----------------------------------------
+
+            - name: Apply ingress
+              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+              run: |
+                  kubectl apply -f kubernetes/ingress.yaml
+
+            # ----------------------------------------
+            # Wait for ALB
+            # ----------------------------------------
+
+            - name: Wait for ALB hostname
+              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+              run: |
+                  for i in {1..30}; do
+                    ALB_DNS=$(kubectl get ingress synctra-ingress \
+                      -n synctra \
+                      -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+                    if [ -n "$ALB_DNS" ]; then
+                      echo "ALB hostname: $ALB_DNS"
+                      echo "ALB_DNS=$ALB_DNS" >> "$GITHUB_ENV"
+                      break
+                    fi
+
+                    echo "Waiting for ALB hostname..."
+                    sleep 10
+                  done
+
+                  if [ -z "$ALB_DNS" ]; then
+                    echo "ALB hostname was not created within the expected time."
+                    exit 1
+                  fi
+
+            # ----------------------------------------
+            # Configure backend CORS
+            # ----------------------------------------
+
+            - name: Update backend CORS origin
+              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+              run: |
+                  kubectl patch configmap backend-config \
+                    -n synctra \
+                    --type merge \
+                    -p "{\"data\":{\"FRONTEND_URL\":\"http://$ALB_DNS\"}}"
+
+            # ----------------------------------------
+            # Apply backend
+            # ----------------------------------------
+
+            - name: Deploy backend to EKS
+              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+              env:
+                  REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+                  IMAGE_TAG: ${{ github.sha }}
+              run: |
+                  kubectl apply -f kubernetes/backend-deployment.yaml
+
+                  kubectl set image deployment/backend \
+                    backend=$REGISTRY/synctra-backend:$IMAGE_TAG \
+                    -n synctra
+
+            # ----------------------------------------
+            # Apply HPA
+            # ----------------------------------------
+
+            - name: Apply backend HPA
+              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+              run: |
+                  kubectl apply -f kubernetes/backend-hpa.yaml
 
             # ----------------------------------------
             # Verify deployments
@@ -152,8 +259,14 @@ jobs:
 
             - name: Verify backend rollout
               if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-              run: kubectl rollout status deployment/backend -n synctra --timeout=5m
+              run: |
+                  kubectl rollout status deployment/backend \
+                    -n synctra \
+                    --timeout=5m
 
             - name: Verify frontend rollout
               if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-              run: kubectl rollout status deployment/frontend -n synctra --timeout=5m
+              run: |
+                  kubectl rollout status deployment/frontend \
+                    -n synctra \
+                    --timeout=5m

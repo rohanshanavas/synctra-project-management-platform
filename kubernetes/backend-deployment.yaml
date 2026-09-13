@@ -18,10 +18,12 @@ spec:
         app: backend
 
     spec:
+      serviceAccountName: backend
+
       containers:
         - name: backend
 
-          image: 643285091347.dkr.ecr.eu-west-1.amazonaws.com/synctra-backend:5c9ea0c857d2ea3dac2b624f11a7eb453c09f181
+          image: 643285091347.dkr.ecr.eu-west-1.amazonaws.com/synctra-backend:IMAGE_TAG
 
           ports:
             - containerPort: 5000
@@ -31,6 +33,11 @@ spec:
                 name: backend-config
             - secretRef:
                 name: backend-secrets
+
+          volumeMounts:
+            - name: secrets-store
+              mountPath: /mnt/secrets-store
+              readOnly: true
 
           resources:
             requests:
@@ -64,3 +71,11 @@ spec:
             periodSeconds: 20
             timeoutSeconds: 3
             failureThreshold: 3
+
+      volumes:
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: backend-secrets

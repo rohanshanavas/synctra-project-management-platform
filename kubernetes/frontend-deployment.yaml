@@ -21,7 +21,7 @@ spec:
       containers:
         - name: frontend
 
-          image: 643285091347.dkr.ecr.eu-west-1.amazonaws.com/synctra-frontend:5c9ea0c857d2ea3dac2b624f11a7eb453c09f181
+          image: 643285091347.dkr.ecr.eu-west-1.amazonaws.com/synctra-frontend:IMAGE_TAG
 
           ports:
             - containerPort: 3000

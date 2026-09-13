@@ -166,3 +166,61 @@ resource "aws_iam_role_policy" "github_actions_eks" {
     ]
   })
 }
+
+data "aws_iam_policy_document" "backend_secrets_assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["pods.eks.amazonaws.com"]
+    }
+
+    actions = [
+      "sts:AssumeRole",
+      "sts:TagSession"
+    ]
+  }
+}
+
+resource "aws_iam_role" "backend_secrets" {
+  name = "${var.project_name}-${var.environment}-backend-secrets-role"
+
+  assume_role_policy = data.aws_iam_policy_document.backend_secrets_assume_role.json
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-backend-secrets-role"
+  }
+}
+
+resource "aws_iam_role_policy" "backend_secrets" {
+  name = "${var.project_name}-${var.environment}-backend-secrets"
+  role = aws_iam_role.backend_secrets.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Effect = "Allow"
+
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+
+        Resource = "arn:aws:secretsmanager:${var.aws_region}:643285091347:secret:synctra/dev/backend-*"
+      }
+    ]
+  })
+}
+
+resource "aws_eks_pod_identity_association" "backend_secrets" {
+  cluster_name    = aws_eks_cluster.main.name
+  namespace       = "synctra"
+  service_account = "backend"
+  role_arn        = aws_iam_role.backend_secrets.arn
+
+  depends_on = [
+    aws_iam_role_policy.backend_secrets
+  ]
+}
