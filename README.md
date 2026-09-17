@@ -54,8 +54,6 @@ A full-stack project management platform for organizing workspaces, projects, ta
 - Amazon EKS
 - Kubernetes
 - GitHub Actions
-- Prometheus
-- Grafana
 
 ## Repository Structure
 
@@ -85,7 +83,7 @@ synctra-project-management-platform/
 
 - Node.js 20+
 - npm
-- MongoDB / MongoDB Atlas
+- MongoDB Atlas
 
 ### 1. Clone the repository
 
