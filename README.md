@@ -44,7 +44,7 @@ A full-stack project management platform for organizing workspaces, projects, ta
 - Zod
 - Morgan
 
-### Planned Cloud / DevOps
+### Cloud / DevOps
 
 - Docker
 - Docker Compose
